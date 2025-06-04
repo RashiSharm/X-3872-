@@ -2,6 +2,7 @@
 
 import ROOT
 import numpy as np
+import sys
 ROOT.gROOT.SetBatch(True)
 lhcbFont = 132
 lhcbWidth = 2.00
@@ -43,8 +44,10 @@ ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/sumH.C')
 ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/debug_R_NDoubleDSCBFit.C')
 CB = ROOT.debug_R_NDoubleDSCBFit()
 
-# current_directory = "/home/rsharm18/work/Rootfile/final/Simultaneous_sideband"
-current_directory = "/home/rsharm18/work/Rootfile/Jan_25"
+
+current_directory = "/home/rsharm18/work/Rootfile/Mar_25/with_trigger_without_physDec"
+# current_directory = "/home/rsharm18/work/Rootfile/Mar_25/no_trigger"
+
 user_choice = input("Enter 0 for Data , 1 to cc MC and 2 for X MC ")
 nL = nR = -100
 alphaL = -100
@@ -53,7 +56,7 @@ if user_choice == "0":
     input = "subreso-Data"
     mass = 3872
     B_pos = 120
-    file_name = "./../Data/subreso_Data.root"
+    file_name = "/home/rsharm18/work/Rootfile/Data/subreso_Data.root"
     sigma_B = 5.68
     sigma_X = 4.70
     output = "Data"
@@ -61,9 +64,9 @@ if user_choice == "0":
     Upper = 3695
 elif user_choice == "1":
     input = "subreso-cc_MC"
-    mass = 3872
+    mass = 3686
     B_pos = 100
-    file_name = "./../cc_MC/subreso_cc.root"
+    file_name = "/home/rsharm18/work/Rootfile/cc_MC/subreso_cc.root"
     sigma_B = 5.03
     sigma_X = 2.6
     output = "cc_MC"
@@ -73,12 +76,12 @@ elif user_choice == "2":
     input = "subreso-X_MC"
     mass = 3872
     B_pos = 11000
-    file_name = "./../X_MC/subreso_X.root"
+    file_name = "/home/rsharm18/work/Rootfile/X_MC/subreso_X.root"
     sigma_B = 5.5
     sigma_X = 2.5
     output = "X_MC"
-    Lower = 3864
-    Upper = 3880
+    Lower = 3682
+    Upper = 3692
 else:
     print("Invalid")        
 
@@ -91,7 +94,15 @@ def histo(file,particle):
     nCandidate = my_tree.GetBranch("nCandidate")
     Bp_B_jpsi_pi2pi3 = my_tree.GetBranch("Bp_B_jpsi_pi2pi3")
 
-
+    Bp_L0DiMuonDecision_TOS = my_tree.GetBranch("Bp_L0DiMuonDecision_TOS")
+    Bp_L0MuonDecision_TOS = my_tree.GetBranch("Bp_L0MuonDecision_TOS")
+    Bp_Hlt1DiMuonHighMassDecision_TOS = my_tree.GetBranch("Bp_Hlt1DiMuonHighMassDecision_TOS")
+    Bp_Hlt1TrackMuonDecision_TOS = my_tree.GetBranch("Bp_Hlt1TrackMuonDecision_TOS")
+    Bp_Hlt1TrackMVADecision_TOS = my_tree.GetBranch("Bp_Hlt1TrackMVADecision_TOS")
+    Bp_Hlt2DiMuonDetachedJPsiDecision_TOS = my_tree.GetBranch("Bp_Hlt2DiMuonDetachedJPsiDecision_TOS")
+    Bp_Hlt2Phys_TOS = my_tree.GetBranch("Bp_Hlt2Phys_TOS")
+    Bp_Hlt1Phys_TOS = my_tree.GetBranch("Bp_Hlt1Phys_TOS")
+    
     ## Histograms    
     histo_B_mass_signal = ROOT.TH1F("B_mass_Jpsi_Constrained_sub"," ", 200, 5100, 5500)
     histo_X_mass_signal = ROOT.TH1F("X_mass_Jpsi_Constrained_sub"," ", 150, 3650, 3950)
@@ -117,15 +128,29 @@ def histo(file,particle):
         nCandidates_cut = nCandidate.GetLeaf("nCandidate").GetValue()
         branch_value_X = Bp_Jpsi_X_M.GetLeaf("Bp_Jpsi_X_M").GetValue()
         Jpsi_reflection = Bp_B_jpsi_pi2pi3.GetLeaf("Bp_B_jpsi_pi2pi3").GetValue()
-        ## signal without reflections
-        if (abs(branch_value_cut-mass) < 2.0*sigma_X) and (nCandidates_cut == 0) and  ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)):
-               histo_B_mass_signal.Fill(branch_value_B)
-        if (abs(branch_value_B-5280) < 2.0*sigma_B) and (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)):
-               histo_X_mass_signal.Fill(branch_value_X)
-        ## sideband without reflections
-        if (abs(branch_value_B-5280) > 4.0*sigma_B) and (abs(branch_value_B-5280) < 10.0*sigma_B) and (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)):
+        
+        L01 = Bp_L0DiMuonDecision_TOS.GetLeaf("Bp_L0DiMuonDecision_TOS").GetValue()
+        L02 = Bp_L0MuonDecision_TOS.GetLeaf("Bp_L0MuonDecision_TOS").GetValue()
+        
+        Hlt1_1 = Bp_Hlt1DiMuonHighMassDecision_TOS.GetLeaf("Bp_Hlt1DiMuonHighMassDecision_TOS").GetValue()
+
+        Hlt1_3 = Bp_Hlt1TrackMuonDecision_TOS.GetLeaf("Bp_Hlt1TrackMuonDecision_TOS").GetValue()
+        Hlt1_4 = Bp_Hlt1TrackMVADecision_TOS.GetLeaf("Bp_Hlt1TrackMVADecision_TOS").GetValue()
+
+        Hlt2_1 = Bp_Hlt2DiMuonDetachedJPsiDecision_TOS.GetLeaf("Bp_Hlt2DiMuonDetachedJPsiDecision_TOS").GetValue()
+       
+
+        ## trigger requirements and (Hlt1_1 or Hlt1_2 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1 or Hlt2_2)
+        
+        if (L01 or L02) and (Hlt1_1 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1) : #trigger without PhysDec
+          if (abs(branch_value_cut-mass) < 2.0*sigma_X) and (nCandidates_cut == 0) and  ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)):
+                histo_B_mass_signal.Fill(branch_value_B)
+          if (abs(branch_value_B-5280) < 2.0*sigma_B) and (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)):
+                histo_X_mass_signal.Fill(branch_value_X)
+          ## sideband without reflections
+          if (abs(branch_value_B-5280) > 4.0*sigma_B) and (abs(branch_value_B-5280) < 10.0*sigma_B) and (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)):
                 histo_X_mass_sideband_sub.Fill(branch_value_X)
-      
+    
     del my_tree  
     return  histo_B_mass_signal, histo_X_mass_signal, histo_X_mass_sideband_sub
 
@@ -138,29 +163,69 @@ t_B = ROOT.TLatex(5290,140,"B")
 
 if user_choice == "0":
  #signal
- Fit_B_sig = CB.fit(histo_B_mass_signal,5100,5500,44,5279,6.44,-10,1.0,-10,1.0,2)
- Fit_X_sig = CB.fit(histo_X_mass_signal,3600,3940,9.1E3,3686,2.6,-10,1.0,-10.,1.0,44,3871.85,4.0,2)
+ Fit_B_sig = CB.fit(histo_B_mass_signal,5100,5500,44,5279,3.22,-10,1.0,-10,1.0,2)
+ Fit_X_sig = CB.fit_2(histo_X_mass_signal,3400,3940,9.1E3,3686,2.6,-10,-1.40,-10.,-1.6155,44,3871.85,4.0,-10,-1.61564,-10.,-1.87239,2)
  
  #fitting both sidebands simulatneously for psi2S
- Fit_psi2S_SB = CB.fit_SB(histo_X_mass_sideband_sub,3550,3850,44,-3671.428,-24.515,nL,alphaL,nR,alphaR,44,-3686.232,-2.544,-10.0,4.0,-10.0,1.0,2)
- #fitting both sidebands simulatneously for X 
-#  Fit_X_SB = CB.fit_SB(histo_X_mass_sideband_sub,3750,3950,44,-3843.606,-14.994,nL,alphaL,nR,alphaR,44,-3871.901,-3.342,-10.0,4.0,-10.0,1.0,2)
+ Fit_X_SB = CB.fit(histo_X_mass_sideband_sub,3750,3950,44,-3871.852,-3.118,-10,-1.61564,-10,-1.87239,2)
+
+ c3 = ROOT.TCanvas()
+ c3.cd()
+ c3.SetFrameLineWidth(2)
+ 
+ amp2 = Fit_X_SB.GetParameter(0)
+ mass2 = Fit_X_SB.GetParameter(1)
+ sigma2 = Fit_X_SB.GetParameter(2)
+ ampE2 = Fit_X_SB.GetParError(0)
+ massE2 = Fit_X_SB.GetParError(1)
+ sigmaE2 = Fit_X_SB.GetParError(2)
+ text = ROOT.TPaveText(0.6, 0.6, 0.9, 0.9, "NDC")
+ text.SetTextAlign(12)
+ text.SetTextSize(0.03)
+ text.SetFillStyle(0)
+ text.SetBorderSize(0)
+ sb0 = text.AddText(f"N = {(amp2):.2f} #pm {ampE2:.2f}")
+ sb1 = text.AddText(f"m = {mass2:.2f} #pm {massE2:.2f}") 
+ sb2 = text.AddText(f"#sigma = {sigma2:.2f} #pm {sigmaE2:.2f}")
+   
+ 
+ histo_X_mass_sideband_sub.GetXaxis().SetRangeUser(3750,3950)
+ histo_X_mass_sideband_sub.GetYaxis().SetTitle(f"Number Of Candidates/{histo_X_mass_sideband_sub.GetXaxis().GetBinWidth(1)} MeV")
+#  histo_X_mass_sideband_sub.GetYaxis().SetTitle(f"Number Of Candidates MeV")
+ histo_X_mass_sideband_sub.GetXaxis().SetTitle("m(J/#psi#pi^{+}#pi^{-}) [MeV]")
+ histo_X_mass_sideband_sub.SetMarkerStyle(20) 
+ histo_X_mass_sideband_sub.SetLineWidth(2)
+ histo_X_mass_sideband_sub.SetMarkerSize(0.1)
+ histo_X_mass_sideband_sub.SetMarkerColor(1)
+ histo_X_mass_sideband_sub.SetLineColor(1)
+ histo_X_mass_sideband_sub.GetYaxis().SetRangeUser(0,120)
+# histo_X_mass_sideband_sub_2.Draw()
+# histo_X_mass_sideband_sub_2.SetLineColor(2)
+ histo_X_mass_sideband_sub.Draw('E')
+ text.Draw("same")
+
+ c3.SaveAs(f"{current_directory}/{output}/sideband_fit_Data_X.pdf")
+ c3.SaveAs(f"{current_directory}/{output}/sideband_fit_Data_X.root")
+#  Fit_X_SB = CB.fit_2(histo_X_mass_sideband_sub,3750,3950,44,-3686,2.6,-10,4.0,-10.,1.0,44,3871.85,4.0,2)
+ 
+ histo_X_mass_sideband_sub.GetXaxis().SetRangeUser(3400,3950)
+ Fit_psi2S_SB = CB.fit_2(histo_X_mass_sideband_sub,3550,3950,44,-3671.428,24.515,nL,alphaL,nR,alphaR,44,-3686.197,-1.990,-10,-1.40,-10.,-1.6155,2)
 
 elif user_choice == "1":
  #signal
  Fit_B_sig = CB.fit(histo_B_mass_signal,5100,5500,44,5279,6.44,-10,1.0,-10,1.0,2)
- Fit_X_sig = CB.fit(histo_X_mass_signal,3600,3940,9.1E3,3686,2.6,-10,1.0,-10.,1.0,0,3871.85,4.0,2)
+ Fit_X_sig = CB.fit(histo_X_mass_signal,3600,3940,9.1E3,3686,5.0,-10,1.0,-10.,1.0,2)
  
 #fitting both sidebands simulatneously 
- Fit_psi2S_SB = CB.fit_SB(histo_X_mass_sideband_sub,3550,3850,44,3660,9.0,nL,alphaL,nR,alphaR,44,3686,4.0,-10.0,4.0,-10.0,1.0,2)
+ Fit_psi2S_SB = CB.fit_2(histo_X_mass_sideband_sub,3550,3850,44,3660,9.0,nL,alphaL,nR,alphaR,44,-3686.197,-1.990,-10,-1.40,-10.,-1.6155,2)
  
 elif user_choice == "2":
  # signal
- Fit_B_sig = CB.fit(histo_B_mass_signal,5100,5500,44,5279,6.44,-10,1.0,-10,1.0,2)
- Fit_X_sig = CB.fit(histo_X_mass_signal,3600,3940,0,3686,2.6,-10,1.0,-10.,1.0,44,3871.85,3.0,2)
+ Fit_B_sig = CB.fit(histo_B_mass_signal,5100,5500,44,5279,3.22,-10,1.0,-10,1.0,2)
+ Fit_X_sig = CB.fit(histo_X_mass_signal,3600,3940,44,3871.85,3.0,-10,1.0,-10.,1.0,2)
  
 #fitting both sidebands simulatneously 
- Fit_X_SB = CB.fit_SB(histo_X_mass_sideband_sub,3750,3950,44,3850,9.0,nL,alphaL,nR,alphaR,44,3872,4.0,-10.0,4.0,-10.0,1.0,2)
+ Fit_X_SB = CB.fit_2(histo_X_mass_sideband_sub,3750,3950,44,3850,9.0,nL,alphaL,nR,alphaR,44,-3871.852,-3.118,-10,-1.61564,-10,-1.87239,2)
 else:
     print("Invalid")     
 
@@ -182,13 +247,13 @@ text_B.SetTextSize(0.03)
 text_B.SetFillStyle(0)
 text_B.SetBorderSize(0)
 
-t0 = text_B.AddText(f"N = {amp_B_S:.3f} #pm {amp_B_S_E:.3f}")
-t1 = text_B.AddText(f"m = {mass_B_S:.3f} #pm {mass_B_S_E:.3f}")
-t2 = text_B.AddText(f"#sigma = {sigma_B_S:.3f} #pm {sigma_B_S_E:.3f}")
+t0 = text_B.AddText(f"N = {amp_B_S:.2f} #pm {amp_B_S_E:.2f}")
+t1 = text_B.AddText(f"m = {mass_B_S:.2f} #pm {mass_B_S_E:.2f}")
+t2 = text_B.AddText(f"#sigma = {sigma_B_S:.2f} #pm {sigma_B_S_E:.2f}")
 
 
-histo_B_mass_signal.GetYaxis().SetTitle("Candidates/2.0 [MeV/c^{2}]")
-histo_B_mass_signal.GetXaxis().SetTitle("m(J/#psi#pi^{+}#pi^{-}K^{+}#pi^{+}#pi^{-}) [MeV/c^{2}]")
+histo_B_mass_signal.GetYaxis().SetTitle(f"Candidates/{histo_B_mass_signal.GetBinWidth(1)} [MeV]")
+histo_B_mass_signal.GetXaxis().SetTitle("m(J/#psi#pi^{+}#pi^{-}K^{+}#pi^{+}#pi^{-}) [MeV]")
 histo_B_mass_signal.SetMarkerStyle(20)
 histo_B_mass_signal.SetLineWidth(2)
 histo_B_mass_signal.Draw('E')
@@ -206,13 +271,13 @@ c0.SaveAs(f"{current_directory}/{output}/B_mass-in_X_Signal_{input}.pdf")
 Fit_B_sig.SetLineColor(4)
 Fit_B_sig.DrawCopy("SAME")
 Fit_B_sig.SetParameter(0,0)
-Fit_B_sig.SetLineColor(8)
+Fit_B_sig.SetLineColor(6)
 Fit_B_sig.SetLineStyle(2)
 Fit_B_sig.DrawCopy("SAME")
 Fit_B_sig.SetParameter(10,0)
 Fit_B_sig.SetParameter(11,0)
 Fit_B_sig.SetParameter(0,amp_B_S)
-Fit_B_sig.SetLineColor(2)
+Fit_B_sig.SetLineColor(3)
 Fit_B_sig.SetLineStyle(2)
 Fit_B_sig.DrawCopy("SAME")
 
@@ -245,16 +310,23 @@ text_X.SetTextAlign(12)
 text_X.SetTextSize(0.03)
 text_X.SetFillStyle(0)
 text_X.SetBorderSize(0)
-
-x0 = text_X.AddText(f"N(#psi(2S)) = {amp_X_S:.3f} #pm {amp_X_S_E:.3f}")
-x1 = text_X.AddText(f"m(#psi(2S)) = {mass_X_S:.3f} #pm {mass_X_S_E:.3f}")
-x2 = text_X.AddText(f"#sigma(#psi(2S)) = {sigma_X_S:.3f} #pm {sigma_X_S_E:.3f}")
-x3 = text_X.AddText(f"N(X(3872)) = {amp_X_S_1:.3f} #pm {amp_X_S_E_1:.3f}")
-x4 = text_X.AddText(f"m(X(3872)) = {mass_X_S_1:.3f} #pm {mass_X_S_E_1:.3f}")
-x5 = text_X.AddText(f"#sigma(X(3872)) = {sigma_X_S_1:.3f} #pm {sigma_X_S_E_1:.3f}")
-
-histo_X_mass_signal.GetYaxis().SetTitle("Candidates/2.0 [MeV/c^{2}]")
-histo_X_mass_signal.GetXaxis().SetTitle("m(J/#psi#pi^{+}#pi^{-}) [MeV/c^{2}]")
+if user_choice == "0":
+  x0 = text_X.AddText(f"N(#psi(2S)) = {amp_X_S:.2f} #pm {amp_X_S_E:.2f}")
+  x1 = text_X.AddText(f"m(#psi(2S)) = {mass_X_S:.2f} #pm {mass_X_S_E:.2f}")
+  x2 = text_X.AddText(f"#sigma(#psi(2S)) = {sigma_X_S:.2f} #pm {sigma_X_S_E:.2f}")
+  x3 = text_X.AddText(f"N(X(3872)) = {amp_X_S_1:.2f} #pm {amp_X_S_E_1:.2f}")
+  x4 = text_X.AddText(f"m(X(3872)) = {mass_X_S_1:.2f} #pm {mass_X_S_E_1:.2f}")
+  x5 = text_X.AddText(f"#sigma(X(3872)) = {sigma_X_S_1:.2f} #pm {sigma_X_S_E_1:.2f}")
+elif user_choice == "1":
+  x0 = text_X.AddText(f"N(#psi(2S)) = {amp_X_S:.2f} #pm {amp_X_S_E:.2f}")
+  x1 = text_X.AddText(f"m(#psi(2S)) = {mass_X_S:.2f} #pm {mass_X_S_E:.2f}")
+  x2 = text_X.AddText(f"#sigma(#psi(2S)) = {sigma_X_S:.2f} #pm {sigma_X_S_E:.2f}")
+elif user_choice == "2":
+  x3 = text_X.AddText(f"N(X(3872)) = {amp_X_S:.2f} #pm {amp_X_S_E:.2f}")
+  x4 = text_X.AddText(f"m(X(3872)) = {mass_X_S:.2f} #pm {mass_X_S_E:.2f}")
+  x5 = text_X.AddText(f"#sigma(X(3872)) = {sigma_X_S:.2f} #pm {sigma_X_S_E:.2f}")
+histo_X_mass_signal.GetYaxis().SetTitle(f"Candidates/{histo_X_mass_signal.GetXaxis().GetBinWidth(1)} [MeV]")
+histo_X_mass_signal.GetXaxis().SetTitle("m(J/#psi#pi^{+}#pi^{-}) [MeV]")
 histo_X_mass_signal.SetMarkerStyle(20)
 histo_X_mass_signal.SetLineWidth(2)
 histo_X_mass_signal.Draw('E')
@@ -285,6 +357,7 @@ Fit_X_sig.DrawCopy("SAME")
 
 Fit_X_sig.SetParameter(10,0)
 Fit_X_sig.SetParameter(11,0)
+Fit_X_sig.SetParameter(12,0)
 Fit_X_sig.SetParameter(0,amp_X_S)
 Fit_X_sig.SetParameter(7,amp_X_S_1)
 Fit_X_sig.SetLineColor(3)
@@ -341,30 +414,29 @@ def sideband(histogram, fit, canvas_name, particle,user_choice):
     massE2 = fit.GetParError(8)
     sigmaE2 = fit.GetParError(9)
 
-    sb0 = text.AddText(f"N(hump) = {amp1:.3f} #pm {ampE1:.3f}")
-    sb1 = text.AddText(f"m(hump) = {mass1:.3f} #pm {massE1:.3f}") 
-    sb2 = text.AddText(f"#sigma(hump) = {sigma1:.3f} #pm {sigmaE1:.3f}")
+    if user_choice == "0":
+      sb0 = text.AddText(f"N = {(amp2):.2f} #pm {ampE2:.2f}")
+      sb1 = text.AddText(f"m = {mass2:.2f} #pm {massE2:.2f}") 
+      sb2 = text.AddText(f"#sigma = {sigma2:.2f} #pm {sigmaE2:.2f}")
     if user_choice == "1":
-      sb3 = text.AddText(f"N(#psi(2S)) = {amp2:.3f} #pm {ampE2:.3f}")
-      sb4 = text.AddText(f"m(#psi(2S)) = {mass2:.3f} #pm {massE2:.3f}")
-      sb5 = text.AddText(f"#sigma(#psi(2S)) = {sigma2:.3f} #pm {sigmaE2:.3f}")
+      sb3 = text.AddText(f"N(#psi(2S)) = {amp2:.2f} #pm {ampE2:.2f}")
+      sb4 = text.AddText(f"m(#psi(2S)) = {mass2:.2f} #pm {massE2:.2f}")
+      sb5 = text.AddText(f"#sigma(#psi(2S)) = {sigma2:.2f} #pm {sigmaE2:.2f}")
     elif user_choice == "2" :
-      sb3 = text.AddText(f"N(X(3872)) = {amp2:.3f} #pm {ampE2:.3f}")
-      sb4 = text.AddText(f"m(X(3872)) = {mass2:.3f} #pm {massE2:.3f}")
-      sb5 = text.AddText(f"#sigma(X(3872)) = {sigma2:.3f} #pm {sigmaE2:.3f}") 
+      sb3 = text.AddText(f"N(X(3872)) = {amp2:.2f} #pm {ampE2:.2f}")
+      sb4 = text.AddText(f"m(X(3872)) = {mass2:.2f} #pm {massE2:.2f}")
+      sb5 = text.AddText(f"#sigma(X(3872)) = {sigma2:.2f} #pm {sigmaE2:.2f}") 
     else:
       exit 
 
-    histogram.GetYaxis().SetTitle("Candidates/2.0 MeV/c^{2}")
-    histogram.GetXaxis().SetTitle("m(J/#psi#pi^{+}#pi^{-}) [MeV/c^{2}]")
+    histogram.GetYaxis().SetTitle(f"Candidates/{histogram.GetXaxis().GetBinWidth(1)}MeV")
+    histogram.GetXaxis().SetTitle("m(J/#psi#pi^{+}#pi^{-}) [MeV]")
     histogram.SetMarkerStyle(20)
     histogram.SetMarkerSize(0.1)
     # histo_X_mass_sideband_sub_sub.SetMarkerStyle(20)
     histogram.SetLineWidth(2)
     histogram.SetMarkerColor(1)
     histogram.SetLineColor(1)
-    # if particle == 'X':
-    #   histogram.GetXaxis().SetRangeUser(3650,4000)
     histogram.Draw('E')
     text.Draw("same")
     c2.SaveAs(f"{current_directory}/{output}/sideband_fit_{input}_{particle}.root")
@@ -383,6 +455,7 @@ def sideband(histogram, fit, canvas_name, particle,user_choice):
     fit.SetParameter(0,fitval_0)
     fit.SetParameter(10,0)
     fit.SetParameter(11,0)
+    fit.SetParameter(12,0)
     fit.SetLineColor(8)
     fit.SetLineStyle(2)
     fit.DrawCopy("SAME")
@@ -395,6 +468,8 @@ def sideband(histogram, fit, canvas_name, particle,user_choice):
     # t_psi2S.Draw()
     # t_X.Draw()
     # legendX.Draw()
+    histogram.GetYaxis().SetRangeUser(0,2700)
+    histogram.GetXaxis().SetRangeUser(3650,3950)
     c2.SaveAs(f"{current_directory}/{output}/sideband_fit_{input}_{particle}.pdf")
     if user_choice == "1":
       histogram.GetXaxis().SetRangeUser(3500,3900)
@@ -424,19 +499,26 @@ if user_choice == '0':
   Psi_2S_Net_Yield_Error = np.sqrt(np.power(amp_X_S_E,2) + (1/9.0)*np.power(peak_err_psi2S,2))
   psi2S_significance = Psi_2S_Net_Yield/Psi_2S_Net_Yield_Error
 
-  # X_Net_Yield = amp_X_S_1 - (1/3.0)*(peak_X)
-  # X_Net_Yield_Error = np.sqrt(np.power(amp_X_S_E_1,2) + (1/9.0)*np.power(peak_err_X,2))
-  # X_significance = X_Net_Yield/X_Net_Yield_Error
+  X_Net_Yield = amp_X_S_1 - (1/3.0)*(amp2)
+  X_Net_Yield_Error = np.sqrt(np.power(amp_X_S_E_1,2) + (1/9.0)*np.power(ampE2,2))
+  X_significance = X_Net_Yield/X_Net_Yield_Error
 
-  print("#############################################################################################################")
-  print("                B+ signal                B+ sideband              Net Yield                Significance")
-  print(" Psi(2S)  ", round(amp_X_S,2) ,r"$\pm$", round(amp_X_S_E,2),"      ", round(peak_psi2S,2),r"$\pm$",round(peak_err_psi2S,2), "        ",round(Psi_2S_Net_Yield,2),r"$\pm$",round(Psi_2S_Net_Yield_Error,2),"       ",round(psi2S_significance,2) )
-  print("                                                                                                                                                                                ")
-  # print(" X(3872)   ",  round(amp_X_S_1,2) ,r"$\pm$", round(amp_X_S_E_1,2),"        ", round(peak_X,2),r"$\pm$",round(peak_err_X,2), "         ",round(X_Net_Yield,2),r"$\pm$",round(X_Net_Yield_Error,2),"         ",round(X_significance,2) )
-  print("#############################################################################################################")
+  f = open(f"{current_directory}/{output}/Data_significance.txt",'w')
+  original_stdout = sys.stdout
+  sys.stdout = f
+  print("#############################################################################################################", file=f)
+  print("                B+ signal         B+ sideband              Net Yield                Significance", file=f)
+  print(" Psi(2S)  ", round(amp_X_S,2) ,u"\u00B1", round(amp_X_S_E,2),"      ", round(peak_psi2S,2),u"\u00B1",round(peak_err_psi2S,2), "        ",round(Psi_2S_Net_Yield,2),u"\u00B1",round(Psi_2S_Net_Yield_Error,2),"       ",round(psi2S_significance,2), file=f)
+  print("                                                                                                                                                                                ", file=f)
+  print(" X(3872)   ",  round(amp_X_S_1,2) ,u"\u00B1", round(amp_X_S_E_1,2),"        ", round(amp2,2),u"\u00B1",round(ampE2,2), "         ",round(X_Net_Yield,2),u"\u00B1",round(X_Net_Yield_Error,2),"         ",round(X_significance,2), file=f )
+  print("#############################################################################################################", file=f)
 
-  print(psi2S_significance)
-  # print(X_significance)
+  print("psi2S significance = ",psi2S_significance, file=f)
+  print("X significance = ",X_significance,file=f)
+  print("Rate = ", (X_Net_Yield/Psi_2S_Net_Yield)*0.802*0.98, u"\u00B1" , ((X_Net_Yield/Psi_2S_Net_Yield)*0.802*0.98)*np.sqrt(np.power(X_Net_Yield_Error/X_Net_Yield,2)+np.power(Psi_2S_Net_Yield_Error/Psi_2S_Net_Yield,2)))
+  sys.stdout = original_stdout
+  f.close()
+
 
 elif user_choice == '1':
   hump_psi2S, hump_err_psi2S, peak_psi2S, peak_err_psi2S = sideband(histo_X_mass_sideband_sub,Fit_psi2S_SB, 'SB at psi2S MC','psi2S',user_choice)
@@ -445,25 +527,35 @@ elif user_choice == '1':
   Psi_2S_Net_Yield_Error = np.sqrt(np.power(amp_X_S_E,2) + (1/9.0)*np.power(peak_err_psi2S,2))
   psi2S_significance = Psi_2S_Net_Yield/Psi_2S_Net_Yield_Error
 
-  print("#############################################################################################################")
-  print("                B+ signal                B+ sideband              Net Yield                Significance")
-  print(" Psi(2S)  ", round(amp_X_S,2) ,r"$\pm$", round(amp_X_S_E,2),"      ", round(peak_psi2S,2),r"$\pm$",round(peak_err_psi2S,2), "        ",round(Psi_2S_Net_Yield,2),r"$\pm$",round(Psi_2S_Net_Yield_Error,2),"       ",round(psi2S_significance,2) )
-  print("#############################################################################################################")
+  f = open(f"{current_directory}/{output}/cc_MC_significance.txt",'w')
+  original_stdout = sys.stdout
+  sys.stdout = f
+  print("#############################################################################################################",file=f)
+  print("                B+ signal                B+ sideband              Net Yield                Significance",file=f)
+  print(" Psi(2S)  ", round(amp_X_S,2) ,u"\u00B1", round(amp_X_S_E,2),"      ", round(peak_psi2S,2),u"\u00B1",round(peak_err_psi2S,2), "        ",round(Psi_2S_Net_Yield,2),u"\u00B1",round(Psi_2S_Net_Yield_Error,2),"       ",round(psi2S_significance,2) ,file=f)
+  print("#############################################################################################################",file=f)
  
-  print(psi2S_significance)
+  print(psi2S_significance,file=f)
+  sys.stdout = original_stdout
+  f.close()
 
 elif user_choice == '2':
   hump_X, hump_err_X, peak_X, peak_err_X = sideband(histo_X_mass_sideband_sub,Fit_X_SB, 'SB at X MC','X',user_choice)
  
-  X_Net_Yield = amp_X_S_1 - (1/3.0)*(peak_X)
-  X_Net_Yield_Error = np.sqrt(np.power(amp_X_S_E_1,2) + (1/9.0)*np.power(peak_err_X,2))
+  X_Net_Yield = amp_X_S - (1/3.0)*(peak_X)
+  X_Net_Yield_Error = np.sqrt(np.power(amp_X_S_E,2) + (1/9.0)*np.power(peak_err_X,2))
   X_significance = X_Net_Yield/X_Net_Yield_Error
-    
-  print("#############################################################################################################")
-  print("                B+ signal                B+ sideband              Net Yield                Significance")
-  print(" X(3872)   ",  round(amp_X_S_1,2) ,r"$\pm$", round(amp_X_S_E_1,2),"        ", round(peak_X,2),r"$\pm$",round(peak_err_X,2), "         ",round(X_Net_Yield,2),r"$\pm$",round(X_Net_Yield_Error,2),"         ",round(X_significance,2) )
-  print("#############################################################################################################")
-  print(X_significance) 
+
+  f = open(f"{current_directory}/{output}/X_MC_significance.txt",'w')
+  original_stdout = sys.stdout
+  sys.stdout = f    
+  print("#############################################################################################################",file=f)
+  print("                B+ signal                B+ sideband              Net Yield                Significance",file=f)
+  print(" X(3872)   ",  round(amp_X_S,2) ,u"\u00B1", round(amp_X_S_E,2),"        ", round(peak_X,2),u"\u00B1",round(peak_err_X,2), "         ",round(X_Net_Yield,2),u"\u00B1",round(X_Net_Yield_Error,2),"         ",round(X_significance,2) ,file=f)
+  print("#############################################################################################################",file=f)
+  print(X_significance,file=f) 
+  sys.stdout = original_stdout
+  f.close()
 
 del histo_B_mass_signal
 del histo_X_mass_signal
@@ -480,72 +572,4 @@ del t_psi2S
 del c
 del file2
 del CB
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# print("#############################################################################################################")
-# print("                B+ signal                B+ sideband              Net Yield                Significance")
-# print(" Psi(2S)  ", round(amp_X_S,2) ,r"$\pm$", round(amp_X_S_E,2),"      ", round(peak_psi2S,2),r"$\pm$",round(peak_err_psi2S,2), "        ",round(Psi_2S_Net_Yield,2),r"$\pm$",round(Psi_2S_Net_Yield_Error,2),"       ",round(psi2S_significance,2) )
-# print("                                                                                                                                                                                ")
-# print(" X(3872)   ",  round(amp_X_S_1,2) ,r"$\pm$", round(amp_X_S_E_1,2),"        ", round(peak_X,2),r"$\pm$",round(peak_err_X,2), "         ",round(X_Net_Yield,2),r"$\pm$",round(X_Net_Yield_Error,2),"         ",round(X_significance,2) )
-# print("#############################################################################################################")
-# print("Psi 2S Significance after sideband reduction ", Psi_2S_Net_Yield/Psi_2S_Net_Yield_Error)
-# print("X (3872) Significance after sideband reduction ", X_Net_Yield/X_Net_Yield_Error)
-
-
-# ROOT.gPad.WaitPrimitive()
-# ROOT.gPad.WaitPrimitive()
-# print(Fit_X_SB.GetParError(0))
-
-# Psi_2S_Sideband = Fit_X_SB.GetParameter(0)
-# Psi_2S_Sideband_Error = Fit_X_SB.GetParError(0)
-# X_Sideband = Fit_X_SB.GetParameter(7)
-# X_Sideband_Error = Fit_X_SB.GetParError(0)
-
-
-# Psi_2S_Net_Yield = Psi_2S_Signal - (1/3.0)*Psi_2S_Sideband
-# Psi_2S_Net_Yield_Error = (Psi_2S_Signal_Error*Psi_2S_Signal_Error + (1/9.0)*Psi_2S_Sideband_Error*Psi_2S_Sideband_Error)**(0.5)
-# X_Net_Yield = X_Signal - (1/3.0)*X_Sideband
-# X_Net_Yield_Error = (X_Signal_Error*X_Signal_Error + (1/9.0)*X_Sideband_Error*X_Sideband_Error)**(0.5)
-# # # print(" Psi_2S_Signal ",Psi_2S_Signal, " Psi_2S_Sideband ", Psi_2S_Sideband," Psi_2S_Net_Yield ",Psi_2S_Net_Yield, " +/- ", Psi_2S_Net_Yield_Error)
-# # # print(" X_Signal ",X_Signal, " X_Sideband ", X_Sideband," X_Net_Yield ",X_Net_Yield, " +/- ", X_Net_Yield_Error)
-# Psi_2S_Significance = Psi_2S_Net_Yield/(Psi_2S_Net_Yield_Error+0.1)
-# X_Significance = X_Net_Yield/X_Net_Yield_Error
-# print("#############################################################################################################")
-# print("                B+ signal                B+ sideband              Net Yield                Significance")
-# print(" Psi(2S)  ", round(Psi_2S_Signal,2) ,r"$\pm$", round(Psi_2S_Signal_Error,2),"      ", round(Psi_2S_Sideband,2),r"$\pm$",round(Psi_2S_Sideband_Error,2), "        ",round(Psi_2S_Net_Yield,2),r"$\pm$",round(Psi_2S_Net_Yield_Error,2),"       ",round(Psi_2S_Significance,2) )
-# # print("                                                                                                                                                                                ")
-# print(" X(3872)   ",  round(X_Signal,2) ,r"$\pm$", round(X_Signal_Error,2),"        ", round(X_Sideband,2),r"$\pm$",round(X_Sideband_Error,2), "         ",round(X_Net_Yield,2),r"$\pm$",round(X_Net_Yield_Error,2),"         ",round(X_Significance,2) )
-# print("#############################################################################################################")
-# # print("Psi 2S Significance after sideband reduction ", Psi_2S_Net_Yield/Psi_2S_Net_Yield_Error)
-# # print("X (3872) Significance after sideband reduction ", X_Net_Yield/X_Net_Yield_Error)
-# # ROOT.gPad.WaitPrimitive()
-# # ROOT.gPad.WaitPrimitive()
-# # ROOT.gPad.WaitPrimitive()
-# # ROOT.gPad.WaitPrimitive()
-# # ROOT.gPad.WaitPrimitive()
-# # ROOT.gPad.WaitPrimitive()
-# # file.Close()
-
-
 
