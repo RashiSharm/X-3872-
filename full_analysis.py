@@ -45,8 +45,7 @@ ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/debug_R_NDoubleDSCBFit.
 CB = ROOT.debug_R_NDoubleDSCBFit()
 
 
-current_directory = "/home/rsharm18/work/Rootfile/June_25"
-# current_directory = "/home/rsharm18/work/Rootfile/Mar_25/no_trigger"
+current_directory = "/home/rsharm18/work/Rootfile/June_25/without_trigger"
 
 user_choice = input("Enter 0 for Data , 1 to cc MC and 2 for X MC ")
 nL = nR = -100
@@ -139,11 +138,10 @@ def histo(file,particle):
         Hlt1_4 = Bp_Hlt1TrackMVADecision_TOS.GetLeaf("Bp_Hlt1TrackMVADecision_TOS").GetValue()
 
         Hlt2_1 = Bp_Hlt2DiMuonDetachedJPsiDecision_TOS.GetLeaf("Bp_Hlt2DiMuonDetachedJPsiDecision_TOS").GetValue()
-        print(Jpsi_reflection)
 
-        ## trigger requirements and (Hlt1_1 or Hlt1_2 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1 or Hlt2_2)
-        
-        if (L01 or L02) and (Hlt1_1 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1) and (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)): #trigger without PhysDec
+        ## trigger requirement reflection removals and multiple entry removals               
+        if (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)):
+        # if (L01 or L02) and (Hlt1_1 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1) and (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)): #trigger without PhysDec
           if (abs(branch_value_cut-mass) < 2.0*sigma_X):
                 histo_B_mass_signal.Fill(branch_value_B)
           if (abs(branch_value_B-5280) < 2.0*sigma_B):

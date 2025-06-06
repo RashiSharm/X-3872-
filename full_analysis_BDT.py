@@ -45,7 +45,7 @@ ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/debug_R_NDoubleDSCBFit.
 CB = ROOT.debug_R_NDoubleDSCBFit()
 
 # current_directory = "/home/rsharm18/work/Rootfile/Mar_25/with_trigger_without_physDec"
-current_directory = "/home/rsharm18/work/Rootfile/Apr_25/with_BDT_trained_on_X_MC"
+current_directory = "/home/rsharm18/work/Rootfile/June_25/with_BDT"
 
 user_choice = input("Enter 0 for Data , 1 to cc MC and 2 for X MC ")
 nL = nR = -100
