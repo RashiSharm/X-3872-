@@ -1,3 +1,5 @@
+Dont trust this code
+
 import ROOT
 import numpy as np
 from array import array
@@ -165,6 +167,7 @@ def hist_comp(hist1,hist1_SB,hist2,hist2_SB,state):
     hist1.SetMarkerColor(1)
     hist1.SetLineColor(1)
     
+    
 
     for bin in range(1,hist1.GetNbinsX()+1):
         error1 = hist1.GetBinError(bin)
@@ -185,37 +188,35 @@ def hist_comp(hist1,hist1_SB,hist2,hist2_SB,state):
 
     hist2_SB.Scale(1/3.0)
     hist2.Add(hist2_SB,-1)
-   
-    
-    for bin in range(1,hist1.GetNbinsX()+1):
-        val_1 = hist1.GetBinContent(bin)
-        val_2 = hist2.GetBinContent(bin)
-        if (val_1 < 0):
-            hist1.SetBinError(bin,abs(val_1))
-        elif(val_2 < 0):
-            hist2.SetBinError(bin,abs(val_2))
+    # for bin in range(1,hist1.GetNbinsX()+1):
+    #     val_1 = hist1.GetBinContent(bin)
+    #     val_2 = hist2.GetBinContent(bin)
+    #     if (val_1 < 0):
+    #         hist1.SetBinError(bin,abs(val_1))
+    #     elif(val_2 < 0):
+    #         hist2.SetBinError(bin,abs(val_2))
     line = ROOT.TLine(700,0,1600,0)
     line.SetLineColor(36)
     
-    hist1.Scale(1./hist1.GetEntries())
-    hist2.Scale(1./hist2.GetEntries())
+    hist1.Scale(1/hist1.GetEntries())
+    hist2.Scale(1/hist2.GetEntries())
     hist1.SetLineColor(1)
     hist2.SetLineColor(2)
     hist1.Draw('E')
     line.Draw('same')
     hist2.Draw('same')
-#     legend.Draw('same')
-#     # histog.Draw('same')
     
-    # c0.SaveAs(f"{current_directory}/Kaon_excitations_with_{state}.root")
-    # c0.SaveAs(f"{current_directory}/Kaon_excitations_with_{state}.pdf")
-    
+    c0.SaveAs(f"{current_directory}/Kaon_excitations_with_{state}.root")
+    # c0
+    .SaveAs(f"{current_directory}/Kaon_excitations_with_{state}.pdf")
 
     c1 = ROOT.TCanvas()
     c1.cd()
     c1.SetFrameLineWidth(2)
     hi_W = ROOT.TH1D("weight","k", 100, 500, 2000)
-    hi_W = hist1/hist2
+    hi_W = hist1.Clone()
+    # hi_W = hist1/hist2
+    hi_W.Divide(hist2)
     hi_W.Draw('E')
     
     # hi_W.SaveAs(f"{current_directory}/weights_for_{state}_Jpsi_refl.root")
@@ -240,47 +241,7 @@ def hist_comp(hist1,hist1_SB,hist2,hist2_SB,state):
     output_file.Close()    
     
 
-    
-
-
 hist_cc_W = hist_comp(histogram_cc,h_cc_SB,histogram_cc_MC,h_cc_SB_MC,"cc")    
 # hist_x_W = hist_comp(histogram_X,h_X_SB,histogram_X_MC,h_X_SB_MC,"X")
 
-
-
-
-
-
-
-
-# file2.1 = ROOT.TFile(f"{file_name_2.1}","RECREATE")
-# file3.1 = ROOT.TFile(f"{file_name_3.1}","RECREATE")
-# def MC_weighting(file,hist_weight):
-#     my_tree = file.Get("nTuple")
-
-#     n_bins = hist_weight.GetNbinsX()
-#     bin_contents = array('f',[0.0])
-#     # bin_contents = ROOT.std.vector('float')()
-#     weight_branch = my_tree.Branch("weight", bin_contents,"weight/F")
-
-#     for entry in range(my_tree.GetEntries()):
-#         my_tree.GetEntry(entry)
-#         bin_index = entry + 1
-#         if bin_index <= n_bins:
-#             bin_value = hist_weight.GetBinContent(bin_index)
-#             bin_contents.push_back(bin_value)
-#         else:
-#             bin_contents.push_back(1.0)    
-
-#         weight_branch.Fill()
-
-#     file_out = ROOT.TFile(f"{current_directory}","RECREATE")
-#     file_out.cd()
-#     my_tree.Write()
-#     file_out.Close()
-    # file.Close()
-
-#     return 1
-
-# MC_weighting(file2,hist_cc_W)
-# MC_weighting(file3,hist_x_W)   
+  

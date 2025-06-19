@@ -1,6 +1,7 @@
 import ROOT
 import numpy as np
 from array import array
+
 import sys
 ROOT.gROOT.SetBatch(True)
 lhcbFont = 132
@@ -39,12 +40,14 @@ ROOT.gStyle.SetTitleW(1.0)
 ROOT.gStyle.SetTitleH(0.10)
 ROOT.gStyle.SetHistMinimumZero(1)
 ROOT.gStyle.SetOptStat(0)
-# ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/sumH.C')
-# # ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/debug_R_NDoubleDSCBFit.C')
+ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/sumH.C')
+ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/FitMyPoly.C')
+ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/NDoubleDSCBFit.C')
 # ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/debug_R_DSCB_BWFit.C')
-# # CB = ROOT.debug_R_NDoubleDSCBFit()
-# CB2 = ROOT.debug_R_DSCB_BWFit()
+poly = ROOT.FitMyPoly()
+DSCB = ROOT.NDoubleDSCBFit()
 
+mc_dir = "/home/rsharm18/work/Rootfile/"
 current_directory = "/home/rsharm18/work/Rootfile/June_25/Kaon_excitations/compared"
 hist_dir = "/home/rsharm18/work/Rootfile/June_25/Kaon_excitations/hist_files"
 
@@ -102,22 +105,135 @@ def hist_comp(file_name_1,file_name_2,particle,permutation):
     hi_2.Draw("same")
     line.Draw("same")
     legend.Draw("same")
-    c0.SaveAs(f"{current_directory}/{particle}_{permutation}.root")
+    # c0.SaveAs(f"{current_directory}/{particle}_{permutation}.root")
 
-hist_comp(file_XK,file_XK_MC,"x","XK")
-hist_comp(file_ccK,file_ccK_MC,"cc","XK")
-hist_comp(file_XKpim,file_XKpim_MC,"x","KPim")
-hist_comp(file_ccKpim,file_ccKpim_MC,"cc","KPim")
-hist_comp(file_Xpip,file_Xpip_MC,"x","pip")
-hist_comp(file_ccpip,file_ccpip_MC,"cc","pip")  
-hist_comp(file_X_jpsipipi,file_X_jpsipipi_MC,"x","jpsipipi")
-hist_comp(file_cc_jpsipipi,file_cc_jpsipipi_MC,"cc","jpsipipi") 
-hist_comp(file_XKpp,file_XKpp_MC,"x","Kpp")
-hist_comp(file_ccKpp,file_ccKpp_MC,"cc","Kpp")
-hist_comp(file_Xpim,file_Xpim_MC,"x","pim")
-hist_comp(file_ccpim,file_ccpim_MC,"cc","pim")
-hist_comp(file_Xpimp,file_Xpimp_MC,"x","pimp")
-hist_comp(file_ccpimp,file_ccpimp_MC,"cc","pimp")
+    c1 = ROOT.TCanvas()
+    c1.cd()
+    c1.SetFrameLineWidth(2)
+
+    hi_W = ROOT.TH1D("weight","k", 100, 500, 2000)
+    # hi_W = hi_1.Clone()
+    # hi_W.Divide(hi_2)
+    hi_W = hi_1/hi_2
+
+    
+    hi_W.Draw('E')
+    line.Draw("same")
+    
+   
+    return hi_W
+
+
+# hist_comp(file_XK,file_XK_MC,"x","XK")
+# hist_comp(file_ccK,file_ccK_MC,"cc","XK")
+# hist_comp(file_XKpim,file_XKpim_MC,"x","KPim")
+# hist_comp(file_ccKpim,file_ccKpim_MC,"cc","KPim")
+# hist_comp(file_Xpip,file_Xpip_MC,"x","pip")
+# hist_comp(file_ccpip,file_ccpip_MC,"cc","pip")  
+# hist_comp(file_X_jpsipipi,file_X_jpsipipi_MC,"x","jpsipipi")
+# hist_comp(file_cc_jpsipipi,file_cc_jpsipipi_MC,"cc","jpsipipi") 
+h_X_W =hist_comp(file_XKpp,file_XKpp_MC,"x","Kpp")
+h_cc_W = hist_comp(file_ccKpp,file_ccKpp_MC,"cc","Kpp")
+# hist_comp(file_Xpim,file_Xpim_MC,"x","pim")
+# hist_comp(file_ccpim,file_ccpim_MC,"cc","pim")
+# hist_comp(file_Xpimp,file_Xpimp_MC,"x","pimp")
+# hist_comp(file_ccpimp,file_ccpimp_MC,"cc","pimp")
     
 
-   
+
+#modifying weights using functions manually
+
+# Fit_cc_l = poly.fit(h_cc_W,920,1200,0.0,2,0)
+
+# output_file = ROOT.TFile(f"{mc_dir}/re-weightMC_cc.root", "RECREATE")
+# tree_w = ROOT.TTree("histo", "Values from the histogram bins")
+# val = array('d', [0.0])
+# bin_center = array('d', [0.])
+# bin_index = array('i', [0]) 
+# tree_w.Branch("weight", val, "weight/D")
+# tree_w.Branch("bin_center", bin_center, 'bin_center/D')
+# tree_w.Branch("bin_index", bin_index, 'bin_index/I')
+# hi_W = ROOT.TH1D("weight"," ", 100, 500, 2000)
+
+# n_bins = h_cc_W.GetNbinsX()
+# for i in range(1, 57):
+#     bin_center[0] = h_cc_W.GetXaxis().GetBinCenter(i)       
+#     val[0] = h_cc_W.GetBinContent(i)
+
+#     if (bin_center[0] < 850):
+#         val[0] = abs(h_cc_W.GetBinContent(28))
+#         # print("less l",bin_center[0],val[0],i)
+#         hi_W.Fill(val[0])
+#     elif(850 < bin_center[0] < 1200):
+#         val[0] = abs(Fit_cc_l.Eval(bin_center[0]))
+#         hi_W.Fill(val[0])
+#         # print("between",bin_center[0],h_cc_W.GetBinContent(i),i)
+#     elif(1340 > bin_center[0] > 1200):        
+#         val[0] = abs(h_cc_W.GetBinContent(i)) 
+#         hi_W.Fill(val[0])
+#         # print("after",bin_center[0],val[0],i) 
+
+#     bin_index[0] = i
+#     tree_w.Fill()      
+    
+    
+# Fit_cc_u = poly.fit(h_cc_W,1340,1580,0.0,2,0)  
+# for i in range(55, n_bins + 1):
+#     bin_center[0] = h_cc_W.GetXaxis().GetBinCenter(i)       
+#     val[0] = h_cc_W.GetBinContent(i)
+#     if( 1605 > bin_center[0] > 1340):        
+#         val[0] = Fit_cc_u.Eval(bin_center[0]) 
+#         hi_W.Fill(val[0])
+#         # print("between 2",bin_center[0],val[0],i)
+#     elif( 1605 < bin_center[0]):        
+#         val[0] = h_cc_W.GetBinContent(28) 
+#         hi_W.Fill(val[0])
+#         # print("end",bin_center[0],val[0],i)    
+
+#     bin_index[0] = i
+#     tree_w.Fill()
+
+# output_file.cd()
+# tree_w.Write()
+# output_file.Close() 
+
+# # modifying X weight
+# output_file_X = ROOT.TFile(f"{mc_dir}/re-weightMC_X.root", "RECREATE")
+# tree_w_X = ROOT.TTree("histo", "Values from the histogram bins")
+# val_X = array('d', [0.0])
+# bin_center_X = array('d', [0.])
+# bin_index_X = array('i', [0]) 
+# tree_w_X.Branch("weight", val_X, "weight/D")
+# tree_w_X.Branch("bin_center", bin_center_X, 'bin_center/D')
+# tree_w_X.Branch("bin_index", bin_index_X, 'bin_index/I')
+# hi_W_X = ROOT.TH1D("weight"," ", 100, 500, 2000)
+
+# Fit_X = DSCB.fit(h_X_W,900,1350,44,1280,100,-10,1.0,-10,1.5,-1)
+
+# for i in range(1, n_bins + 1):
+#     bin_center_X[0] = h_X_W.GetXaxis().GetBinCenter(i)       
+#     val_X[0] = h_X_W.GetBinContent(i)
+
+#     if (bin_center_X[0] < 957):
+#         val_X[0] = abs(0.4)
+#         print("less l",bin_center_X[0],val_X[0],i)
+#         hi_W_X.Fill(val_X[0])
+#     elif(957 < bin_center_X[0] < 1340):
+#         val_X[0] = abs(Fit_X.Eval(bin_center_X[0]))
+#         hi_W_X.Fill(val_X[0])
+#         print("between",bin_center_X[0],h_X_W.GetBinContent(i),i)
+#     elif(1340 < bin_center_X[0]< 1500):        
+#         val_X[0] = abs(h_X_W.GetBinContent(58)) 
+#         hi_W_X.Fill(val_X[0])
+#         print("after",bin_center_X[0],val_X[0],i) 
+#     elif(1500 < bin_center_X[0]):        
+#         val_X[0] = abs(0.4) 
+#         hi_W_X.Fill(val_X[0])
+#         print("after",bin_center_X[0],val_X[0],i)     
+#     bin_index_X[0] = i
+#     tree_w_X.Fill()
+
+# output_file_X.cd()
+# tree_w_X.Write()
+# output_file_X.Close()
+

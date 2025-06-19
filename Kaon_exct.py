@@ -1,3 +1,5 @@
+# this makes hist files and canvas files alaong with pdfs with sideband subtracted sub resonance structures for different permutations of final state particle X?psi2S with K pi- pi+
+
 import ROOT
 import numpy as np
 import sys
@@ -53,6 +55,9 @@ nL = nR = -100
 alphaL = -100
 alphaR = -100
 
+reweight_name_cc = "/home/rsharm18/work/Rootfile/jjj.root"
+reweight_name_X = "/home/rsharm18/work/Rootfile/X.root"
+
 Kaon_mass = 493.68
 mu_mass = 105.658
 pi_mass = 139.5
@@ -89,6 +94,8 @@ else:
 def PE_calculator(mass,px,py,pz):
     PE = np.sqrt(np.power(px,2)+np.power(py,2)+np.power(pz,2)+(np.power(mass,2)))
     return PE
+
+
 
 file = ROOT.TFile.Open(f"{file_name}","READ")
 def histo(file,particle,permutation,lower,upper):
@@ -272,8 +279,8 @@ def histo(file,particle,permutation,lower,upper):
 
         Hlt2_1 = Bp_Hlt2DiMuonDetachedJPsiDecision_TOS.GetLeaf("Bp_Hlt2DiMuonDetachedJPsiDecision_TOS").GetValue()
         
-# defining the Kaon excitation variable 
-# if (L01 or L02) and (Hlt1_1 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1)and (nCandidates_cut==0):#and (Lower>Jpsi_reflection or Jpsi_reflection>Upper): 
+        #  defining the Kaon excitation variable 
+        # if (L01 or L02) and (Hlt1_1 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1)and (nCandidates_cut==0):#and (Lower>Jpsi_reflection or Jpsi_reflection>Upper): 
         if (L01 or L02) and (Hlt1_1 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1) and (nCandidates_cut==0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)):      
          if (abs(branch_value_B-5279.92) < 2.0*sigma_B) :        
             if(particle=='X'and abs(branch_value_X-3872.)<2.0*sigma_X) :
@@ -294,6 +301,7 @@ def histo(file,particle,permutation,lower,upper):
 
 def hist_save(histog,hist_SB,particle,permutation,lower,upper):
 
+    file = ROOT.TFile.Open(f"{file_name}","READ")
     c0 = ROOT.TCanvas()
     c0.cd()
     c0.SetFrameLineWidth(2)
@@ -354,53 +362,53 @@ def hist_save(histog,hist_SB,particle,permutation,lower,upper):
     return hi_S
 
 
-# Kpp
-# histogram_X,h_cc,h_X_SB,h_ccsb = histo(file,"X","Kpp",500,2000)  
-# h_X,histogram_cc,h_xsb,h_cc_SB = histo(file,"cc","Kpp",500,2000)
+# # Kpp
+histogram_X,h_cc,h_X_SB,h_ccsb = histo(file,"X","Kpp",500,2000)  
+h_X,histogram_cc,h_xsb,h_cc_SB = histo(file,"cc","Kpp",500,2000)
 
-# hist_x = hist_save(histogram_X,h_X_SB,"X","Kpp",500,2000)
-# hist_cc = hist_save(histogram_cc,h_cc_SB,"#psi(2S)","Kpp",500,2000)
-# # # # #Kpp_Jpsi_const
-# histogram_X_C,h_cc_C,h_X_SB_C,h_ccsb_C = histo(file,"X","Kpp_const",500,2000)  
-# h_X_C,histogram_cc_C,h_xsb_C,h_cc_SB_C = histo(file,"cc","Kpp_const",500,2000)
+hist_x = hist_save(histogram_X,h_X_SB,"X","Kpp",500,2000)
+hist_cc = hist_save(histogram_cc,h_cc_SB,"#psi(2S)","Kpp",500,2000)
+# # # #Kpp_Jpsi_const
+histogram_X_C,h_cc_C,h_X_SB_C,h_ccsb_C = histo(file,"X","Kpp_const",500,2000)  
+h_X_C,histogram_cc_C,h_xsb_C,h_cc_SB_C = histo(file,"cc","Kpp_const",500,2000)
 
-# hist_x_C = hist_save(histogram_X_C,h_X_SB_C,"X","Kpp_const",500,2000)
-# hist_cc_C = hist_save(histogram_cc_C,h_cc_SB_C,"#psi(2S)","Kpp_const",500,2000)
-# # # #XK
-# histogram_X_XK,h_cc_XK,h_X_SB_XK,h_ccsb_XK = histo(file,"X","XK",3000,5000)  
-# h_X_XK,histogram_cc_XK,h_xsb_XK,h_cc_SB_XK = histo(file,"cc","XK",3000,5000)
+hist_x_C = hist_save(histogram_X_C,h_X_SB_C,"X","Kpp_const",500,2000)
+hist_cc_C = hist_save(histogram_cc_C,h_cc_SB_C,"#psi(2S)","Kpp_const",500,2000)
+# # #XK
+histogram_X_XK,h_cc_XK,h_X_SB_XK,h_ccsb_XK = histo(file,"X","XK",3000,5000)  
+h_X_XK,histogram_cc_XK,h_xsb_XK,h_cc_SB_XK = histo(file,"cc","XK",3000,5000)
 
-# hist_x_XK = hist_save(histogram_X_XK,h_X_SB_XK,"X","XK",3000,5000)
-# hist_cc_XK = hist_save(histogram_cc_XK,h_cc_SB_XK,"#psi(2S)","XK",3000,5000)
+hist_x_XK = hist_save(histogram_X_XK,h_X_SB_XK,"X","XK",3000,5000)
+hist_cc_XK = hist_save(histogram_cc_XK,h_cc_SB_XK,"#psi(2S)","XK",3000,5000)
 
-# jpsipipi
-# histogram_X_jpsipipi,h_cc_jpsipipi,h_X_SB_jpsipipi,h_ccsb_jpsipipi = histo(file,"X","jpsipipi",3000,5000)  
+# # jpsipipi
+histogram_X_jpsipipi,h_cc_jpsipipi,h_X_SB_jpsipipi,h_ccsb_jpsipipi = histo(file,"X","jpsipipi",3000,5000)  
 h_X_jpsipipi,histogram_cc_jpsipipi,h_xsb_jpsipipi,h_cc_SB_jpsipipi = histo(file,"cc","jpsipipi",3000,5000)
 
-# hist_x_jpsipipi = hist_save(histogram_X_jpsipipi,h_X_SB_jpsipipi,"X","jpsipipi",3000,5000)
+hist_x_jpsipipi = hist_save(histogram_X_jpsipipi,h_X_SB_jpsipipi,"X","jpsipipi",3000,5000)
 hist_cc_jpsipipi = hist_save(histogram_cc_jpsipipi,h_cc_SB_jpsipipi,"#psi(2S)","jpsipipi",3000,5000)
-# # #XPim
-# histogram_X_XPim,h_cc_XPim,h_X_SB_XPim,h_ccsb_XPim = histo(file,"X","XPim",3000,5000)  
-# h_X_XPim,histogram_cc_XPim,h_xsb_XPim,h_cc_SB_XPim = histo(file,"cc","XPim",3000,5000)
+# #XPim
+histogram_X_XPim,h_cc_XPim,h_X_SB_XPim,h_ccsb_XPim = histo(file,"X","XPim",3000,5000)  
+h_X_XPim,histogram_cc_XPim,h_xsb_XPim,h_cc_SB_XPim = histo(file,"cc","XPim",3000,5000)
 
-# hist_x_XPim = hist_save(histogram_X_XPim,h_X_SB_XPim,"X","XPim",3000,5000)
-# hist_cc_XPim = hist_save(histogram_cc_XPim,h_cc_SB_XPim,"#psi(2S)","XPim",3000,5000)
-# # #XPimk
-# histogram_X_XPimK,h_cc_XPimK,h_X_SB_XPimK,h_ccsb_XPimK = histo(file,"X","XPimK",3000,6000)  
-# h_X_XPimK,histogram_cc_XPimK,h_xsb_XPimK,h_cc_SB_XPimK = histo(file,"cc","XPimK",3000,6000)
+hist_x_XPim = hist_save(histogram_X_XPim,h_X_SB_XPim,"X","XPim",3000,5000)
+hist_cc_XPim = hist_save(histogram_cc_XPim,h_cc_SB_XPim,"#psi(2S)","XPim",3000,5000)
+# #XPimk
+histogram_X_XPimK,h_cc_XPimK,h_X_SB_XPimK,h_ccsb_XPimK = histo(file,"X","XPimK",3000,6000)  
+h_X_XPimK,histogram_cc_XPimK,h_xsb_XPimK,h_cc_SB_XPimK = histo(file,"cc","XPimK",3000,6000)
 
-# hist_x_XPimK = hist_save(histogram_X_XPimK,h_X_SB_XPimK,"X","XPimK",3000,6000)
-# hist_cc_XPimK = hist_save(histogram_cc_XPimK,h_cc_SB_XPimK,"#psi(2S)","XPimK",3000,6000)
-# # #XPip
-# histogram_X_XPip,h_cc_XPip,h_X_SB_XPip,h_ccsb_XPip = histo(file,"X","XPip",3000,5000)  
-# h_X_XPip,histogram_cc_XPip,h_xsb_XPip,h_cc_SB_XPip = histo(file,"cc","XPip",3000,5000)
+hist_x_XPimK = hist_save(histogram_X_XPimK,h_X_SB_XPimK,"X","XPimK",3000,6000)
+hist_cc_XPimK = hist_save(histogram_cc_XPimK,h_cc_SB_XPimK,"#psi(2S)","XPimK",3000,6000)
+# #XPip
+histogram_X_XPip,h_cc_XPip,h_X_SB_XPip,h_ccsb_XPip = histo(file,"X","XPip",3000,5000)  
+h_X_XPip,histogram_cc_XPip,h_xsb_XPip,h_cc_SB_XPip = histo(file,"cc","XPip",3000,5000)
 
-# hist_x_XPip = hist_save(histogram_X_XPip,h_X_SB_XPip,"X","XPip",3000,5000)
-# hist_cc_XPip = hist_save(histogram_cc_XPip,h_cc_SB_XPip,"#psi(2S)","XPip",3000,5000)
-# # # # #XPimp
-# histogram_X_XPimp,h_cc_XPimp,h_X_SB_XPimp,h_ccsb_XPimp = histo(file,"X","XPimp",3000,5000)  
-# h_X_XPimp,histogram_cc_XPimp,h_xsb_XPimp,h_cc_SB_XPimp = histo(file,"cc","XPimp",3000,5000)
+hist_x_XPip = hist_save(histogram_X_XPip,h_X_SB_XPip,"X","XPip",3000,5000)
+hist_cc_XPip = hist_save(histogram_cc_XPip,h_cc_SB_XPip,"#psi(2S)","XPip",3000,5000)
+# # # #XPimp
+histogram_X_XPimp,h_cc_XPimp,h_X_SB_XPimp,h_ccsb_XPimp = histo(file,"X","XPimp",3000,5000)  
+h_X_XPimp,histogram_cc_XPimp,h_xsb_XPimp,h_cc_SB_XPimp = histo(file,"cc","XPimp",3000,5000)
 
-# hist_x_Pimp = hist_save(histogram_X_XPimp,h_X_SB_XPimp,"X","XPimp",3000,5000)
-# hist_cc_Pimp = hist_save(histogram_cc_XPimp,h_cc_SB_XPimp,"#psi(2S)","XPimp",3000,5000)
+hist_x_Pimp = hist_save(histogram_X_XPimp,h_X_SB_XPimp,"X","XPimp",3000,5000)
+hist_cc_Pimp = hist_save(histogram_cc_XPimp,h_cc_SB_XPimp,"#psi(2S)","XPimp",3000,5000)
 
