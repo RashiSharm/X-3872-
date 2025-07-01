@@ -115,10 +115,37 @@ def hist_comp(file_name_1,file_name_2,particle,permutation):
     # hi_W = hi_1.Clone()
     # hi_W.Divide(hi_2)
     hi_W = hi_1/hi_2
+    hi_W.Smooth()
 
+    if (permutation == "Kpp"):
+        if (particle=="cc"):    
+            k=0.0
+            for i in range(20,30):
+                k=k-0.004
+                hi_W.SetBinContent(i,0.03-k) 
+            for i in range(70,76):    
+                hi_W.SetBinContent(i,hi_W.GetBinContent(69))  
+        elif(particle == "x"):
+            Fit_X = DSCB.fit(hi_W,900,1350,44,1280,100,-10,1.0,-10,1.5,-1)
+            k=0.0
+            for i in range(19,27):
+                k=k-0.02
+                hi_W.SetBinContent(i,0.004-k) 
+            for i in range(27,61):
+                hi_W.SetBinContent(i,Fit_X.Eval(hi_W.GetXaxis().GetBinCenter(i)))    
+            for i in range(61,66):    
+                hi_W.SetBinContent(i,hi_W.GetBinContent(60))
     
     hi_W.Draw('E')
-    line.Draw("same")
+        # Fit_X.Draw("same")    
+    hi_W.SaveAs(f"{current_directory}/rewight_{permutation}_{particle}_smooth.root")
+
+    
+    if (particle == "cc"):
+        hi_W.SetBinContent(51,1.876)       
+    nbins = hi_W.GetNbinsX()
+    for i in range(1, nbins+1):    
+        print(hi_W.GetBinCenter(i),hi_W.GetBinContent(i),i)
     
    
     return hi_W
@@ -132,8 +159,13 @@ def hist_comp(file_name_1,file_name_2,particle,permutation):
 # hist_comp(file_ccpip,file_ccpip_MC,"cc","pip")  
 # hist_comp(file_X_jpsipipi,file_X_jpsipipi_MC,"x","jpsipipi")
 # hist_comp(file_cc_jpsipipi,file_cc_jpsipipi_MC,"cc","jpsipipi") 
+
 h_X_W =hist_comp(file_XKpp,file_XKpp_MC,"x","Kpp")
 h_cc_W = hist_comp(file_ccKpp,file_ccKpp_MC,"cc","Kpp")
+
+
+
+
 # hist_comp(file_Xpim,file_Xpim_MC,"x","pim")
 # hist_comp(file_ccpim,file_ccpim_MC,"cc","pim")
 # hist_comp(file_Xpimp,file_Xpimp_MC,"x","pimp")
