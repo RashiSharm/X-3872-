@@ -41,13 +41,13 @@ ROOT.gStyle.SetTitleW(1.0)
 ROOT.gStyle.SetTitleH(0.10)
 ROOT.gStyle.SetHistMinimumZero(1)
 ROOT.gStyle.SetOptStat(0)
-ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/sumH.C')
-# ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/debug_R_NDoubleDSCBFit.C')
-ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/debug_R_DSCB_BWFit.C')
+ROOT.gROOT.LoadMacro('./plot_Scripts_T/sumH.C')
+# ROOT.gROOT.LoadMacro('./plot_Scripts_T/debug_R_NDoubleDSCBFit.C')
+ROOT.gROOT.LoadMacro('./plot_Scripts_T/debug_R_DSCB_BWFit.C')
 # CB = ROOT.debug_R_NDoubleDSCBFit()
 CB2 = ROOT.debug_R_DSCB_BWFit()
 
-current_directory = "/home/rsharm18/work/Rootfile/June_25/Kaon_excitations/hist_files"
+current_directory = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/weighted"
 
 user_choice = input("Enter 0 for Data , 1 to cc MC and 2 for X MC ")
 
@@ -55,16 +55,13 @@ nL = nR = -100
 alphaL = -100
 alphaR = -100
 
-reweight_name_cc = "/home/rsharm18/work/Rootfile/jjj.root"
-reweight_name_X = "/home/rsharm18/work/Rootfile/X.root"
-
 Kaon_mass = 493.68
 mu_mass = 105.658
 pi_mass = 139.5
 if user_choice == "0":
     input = "subreso-Data"
     X_mass = 3872
-    file_name = "/home/rsharm18/work/Rootfile/Data/subreso_Data.root"
+    file_name = "./Data/subreso_Data.root"
     sigma_B = 5.68
     sigma_X = 3.70
     output = "Data"
@@ -73,7 +70,7 @@ if user_choice == "0":
 elif user_choice == "1":
     input = "subreso-cc_MC"
     X_mass = 3686
-    file_name = "/home/rsharm18/work/Rootfile/cc_MC/subreso_cc.root"
+    file_name = "./cc_MC/subreso_cc.root"
     sigma_B = 5.2
     sigma_X = 2.34
     output = "cc_MC"
@@ -82,7 +79,7 @@ elif user_choice == "1":
 elif user_choice == "2":
     input = "subreso-X_MC"
     X_mass = 3872
-    file_name = "/home/rsharm18/work/Rootfile/X_MC/subreso_X.root"
+    file_name = "./X_MC/subreso_X.root"
     sigma_B = 4.79
     sigma_X = 3.13
     output = "X_MC"
@@ -106,6 +103,7 @@ def histo(file,particle,permutation,lower,upper):
     Bp_Jpsi_X_M = my_tree.GetBranch("Bp_Jpsi_X_M")
     nCandidate = my_tree.GetBranch("nCandidate")
     Bp_B_jpsi_pi2pi3 = my_tree.GetBranch("Bp_B_jpsi_pi2pi3")
+    weight = my_tree.GetBranch("weight")
 
     Bp_L0DiMuonDecision_TOS = my_tree.GetBranch("Bp_L0DiMuonDecision_TOS")
     Bp_L0MuonDecision_TOS = my_tree.GetBranch("Bp_L0MuonDecision_TOS")
@@ -173,6 +171,8 @@ def histo(file,particle,permutation,lower,upper):
         branch_value_X = Bp_Jpsi_X_M.GetLeaf("Bp_Jpsi_X_M").GetValue()
         nCandidates_cut = nCandidate.GetLeaf("nCandidate").GetValue()
         Jpsi_reflection = Bp_B_jpsi_pi2pi3.GetLeaf("Bp_B_jpsi_pi2pi3").GetValue()
+        
+        WeighT = weight.GetLeaf("weight").GetValue()
     #B + PV + Jpsi constrained variable
         B_K_px = Bp_B_K_px.GetLeaf("Bp_B_K_px").GetValue()
         B_K_py = Bp_B_K_py.GetLeaf("Bp_B_K_py").GetValue()
@@ -284,15 +284,15 @@ def histo(file,particle,permutation,lower,upper):
         if (L01 or L02) and (Hlt1_1 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1) and (nCandidates_cut==0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)):      
          if (abs(branch_value_B-5279.92) < 2.0*sigma_B) :        
             if(particle=='X'and abs(branch_value_X-3872.)<2.0*sigma_X) :
-             histo_X.Fill(K_exct) 
+             histo_X.Fill(K_exct,WeighT) 
             elif (particle=='cc' and abs(branch_value_X-3686.)<2.0*sigma_X) :  
-             histo_cc.Fill(K_exct)
+             histo_cc.Fill(K_exct,WeighT)
         # sideband   
          if (abs(branch_value_B-5279.90) > 4.0*sigma_B) and (abs(branch_value_B-5279.90) < 10.0*sigma_B) :     
             if (particle =="X" and abs(branch_value_X-3872.) > 4.0*sigma_X) and (abs(branch_value_X-3872.) < 10.0*sigma_X) :    
-                histo_X_SB.Fill(K_exct)    
+                histo_X_SB.Fill(K_exct,WeighT)    
             elif(particle == "cc" and abs(branch_value_X-3872.) > 4.0*sigma_X) and (abs(branch_value_X-3872.) < 10.0*sigma_X) : 
-                histo_cc_SB.Fill(K_exct)  
+                histo_cc_SB.Fill(K_exct,WeighT)  
 
     del my_tree  
     return  histo_X,histo_cc,histo_X_SB,histo_cc_SB
@@ -362,7 +362,7 @@ def hist_save(histog,hist_SB,particle,permutation,lower,upper):
     return hi_S
 
 
-# # Kpp
+# # # Kpp
 histogram_X,h_cc,h_X_SB,h_ccsb = histo(file,"X","Kpp",500,2000)  
 h_X,histogram_cc,h_xsb,h_cc_SB = histo(file,"cc","Kpp",500,2000)
 

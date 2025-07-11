@@ -40,12 +40,12 @@ ROOT.gStyle.SetTitleW(1.0)
 ROOT.gStyle.SetTitleH(0.10)
 ROOT.gStyle.SetHistMinimumZero(1)
 ROOT.gStyle.SetOptStat(0)
-ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/sumH.C')
-ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/debug_R_NDoubleDSCBFit.C')
+ROOT.gROOT.LoadMacro('./plot_Scripts_T/sumH.C')
+ROOT.gROOT.LoadMacro('./plot_Scripts_T/debug_R_NDoubleDSCBFit.C')
 CB = ROOT.debug_R_NDoubleDSCBFit()
 
-# current_directory = "/home/rsharm18/work/Rootfile/Mar_25/with_trigger_without_physDec"
-current_directory = "/home/rsharm18/work/Rootfile/June_25/with_BDT"
+# current_directory = "./Mar_25/with_trigger_without_physDec"
+current_directory = "./Jul_25/with_BDT"
 
 user_choice = input("Enter 0 for Data , 1 to cc MC and 2 for X MC ")
 nL = nR = -100
@@ -55,8 +55,8 @@ if user_choice == "0":
     input = "subreso-Data"
     mass = 3872
     B_pos = 120
-    file_name = "/home/rsharm18/work/Rootfile/Data/subreso_Data.root"
-    BDT_file = "/home/rsharm18/work/Rootfile/TMVA_Single_Entry_2_X_Data.root"
+    file_name = "./Data/subreso_Data.root"
+    BDT_file = "TMVA_Single_Entry_2_X.root"
     sigma_B = 5.68
     sigma_X = 4.70
     output = "Data"
@@ -66,8 +66,8 @@ elif user_choice == "1":
     input = "subreso-cc_MC"
     mass = 3686
     B_pos = 100
-    file_name = "/home/rsharm18/work/Rootfile/cc_MC/subreso_cc.root"
-    BDT_file = "/home/rsharm18/work/Rootfile/TMVA_Single_Entry_2_X_cc_MC.root"
+    file_name = "./cc_MC/subreso_cc.root"
+    BDT_file = "TMVA_Single_Entry_2_X_cc_MC.root"
     sigma_B = 5.03
     sigma_X = 2.6
     output = "cc_MC"
@@ -77,8 +77,8 @@ elif user_choice == "2":
     input = "subreso-X_MC"
     mass = 3872
     B_pos = 11000
-    file_name = "/home/rsharm18/work/Rootfile/X_MC/subreso_X.root"
-    BDT_file = "/home/rsharm18/work/Rootfile/TMVA_Single_Entry_2_X_MC.root"
+    file_name = "./X_MC/subreso_X.root"
+    BDT_file = "TMVA_Single_Entry_2_X_MC.root"
     sigma_B = 5.5
     sigma_X = 2.5
     output = "X_MC"

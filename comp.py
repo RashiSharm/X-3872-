@@ -40,16 +40,16 @@ ROOT.gStyle.SetTitleW(1.0)
 ROOT.gStyle.SetTitleH(0.10)
 ROOT.gStyle.SetHistMinimumZero(1)
 ROOT.gStyle.SetOptStat(0)
-ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/sumH.C')
-ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/FitMyPoly.C')
-ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/NDoubleDSCBFit.C')
-# ROOT.gROOT.LoadMacro('/home/rsharm18/work/plot_Scripts_T/debug_R_DSCB_BWFit.C')
+ROOT.gROOT.LoadMacro('./plot_Scripts_T/sumH.C')
+ROOT.gROOT.LoadMacro('./plot_Scripts_T/FitMyPoly.C')
+ROOT.gROOT.LoadMacro('./plot_Scripts_T/NDoubleDSCBFit.C')
+# ROOT.gROOT.LoadMacro('./plot_Scripts_T/debug_R_DSCB_BWFit.C')
 poly = ROOT.FitMyPoly()
 DSCB = ROOT.NDoubleDSCBFit()
 
-mc_dir = "/home/rsharm18/work/Rootfile/"
-current_directory = "/home/rsharm18/work/Rootfile/June_25/Kaon_excitations/compared"
-hist_dir = "/home/rsharm18/work/Rootfile/June_25/Kaon_excitations/hist_files"
+current_directory = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/weighted/compared"
+current_directory_2 = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/weighted/stacked"
+hist_dir = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/weighted"
 
 file_XK = f"{hist_dir}/Data/Kaon_excitations_with_X_XK.root"
 file_XK_MC = f"{hist_dir}/X_MC/Kaon_excitations_with_X_XK.root"
@@ -105,7 +105,7 @@ def hist_comp(file_name_1,file_name_2,particle,permutation):
     hi_2.Draw("same")
     line.Draw("same")
     legend.Draw("same")
-    # c0.SaveAs(f"{current_directory}/{particle}_{permutation}.root")
+    c0.SaveAs(f"{current_directory}/{particle}_{permutation}.root")
 
     c1 = ROOT.TCanvas()
     c1.cd()
@@ -115,13 +115,40 @@ def hist_comp(file_name_1,file_name_2,particle,permutation):
     # hi_W = hi_1.Clone()
     # hi_W.Divide(hi_2)
     hi_W = hi_1/hi_2
+    hi_W.Smooth()
 
+    if (permutation == "Kpp"):
+        if (particle=="cc"):    
+            k=0.0
+            for i in range(20,30):
+                k=k-0.004
+                hi_W.SetBinContent(i,0.03-k) 
+            for i in range(70,76):    
+                hi_W.SetBinContent(i,hi_W.GetBinContent(69))  
+        elif(particle == "x"):
+            Fit_X = DSCB.fit(hi_W,900,1350,44,1280,100,-10,1.0,-10,1.5,-1)
+            k=0.0
+            for i in range(19,27):
+                k=k-0.02
+                hi_W.SetBinContent(i,0.004-k) 
+            for i in range(27,61):
+                hi_W.SetBinContent(i,Fit_X.Eval(hi_W.GetXaxis().GetBinCenter(i)))    
+            for i in range(61,66):    
+                hi_W.SetBinContent(i,hi_W.GetBinContent(60))
     
     hi_W.Draw('E')
-    line.Draw("same")
+        # Fit_X.Draw("same")    
+    hi_W.SaveAs(f"{current_directory_2}/rewight_{permutation}_{particle}_smooth.root")
+
+    
+    if (particle == "cc"):
+        hi_W.SetBinContent(51,1.876)       
+    nbins = hi_W.GetNbinsX()
+    # for i in range(1, nbins+1):    
+        # print(hi_W.GetBinCenter(i),hi_W.GetBinContent(i),i)
     
    
-    return hi_W
+    return None
 
 
 # hist_comp(file_XK,file_XK_MC,"x","XK")
@@ -132,8 +159,8 @@ def hist_comp(file_name_1,file_name_2,particle,permutation):
 # hist_comp(file_ccpip,file_ccpip_MC,"cc","pip")  
 # hist_comp(file_X_jpsipipi,file_X_jpsipipi_MC,"x","jpsipipi")
 # hist_comp(file_cc_jpsipipi,file_cc_jpsipipi_MC,"cc","jpsipipi") 
-h_X_W =hist_comp(file_XKpp,file_XKpp_MC,"x","Kpp")
-h_cc_W = hist_comp(file_ccKpp,file_ccKpp_MC,"cc","Kpp")
+hist_comp(file_XKpp,file_XKpp_MC,"x","Kpp")
+hist_comp(file_ccKpp,file_ccKpp_MC,"cc","Kpp")
 # hist_comp(file_Xpim,file_Xpim_MC,"x","pim")
 # hist_comp(file_ccpim,file_ccpim_MC,"cc","pim")
 # hist_comp(file_Xpimp,file_Xpimp_MC,"x","pimp")
