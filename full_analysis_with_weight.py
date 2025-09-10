@@ -157,8 +157,8 @@ def histo(file,particle):
         Hlt2_1 = Bp_Hlt2DiMuonDetachedJPsiDecision_TOS.GetLeaf("Bp_Hlt2DiMuonDetachedJPsiDecision_TOS").GetValue()
         
         ## trigger requirement reflection removals and multiple entry removals               
-        if (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)): # without_trigger
-        # if (L01 or L02) and (Hlt1_1 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1) and (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)): # with trigger
+        # if (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)): # without_trigger
+        if (L01 or L02) and (Hlt1_1 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1) and (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)): # with trigger
           if (abs(branch_value_cut-mass) < 2.0*sigma_X):
             if (user_choice == "0"):
               histo_B_mass_signal.Fill(branch_value_B)
