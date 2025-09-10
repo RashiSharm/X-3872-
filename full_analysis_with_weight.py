@@ -40,12 +40,12 @@ ROOT.gStyle.SetTitleW(1.0)
 ROOT.gStyle.SetTitleH(0.10)
 ROOT.gStyle.SetHistMinimumZero(1)
 ROOT.gStyle.SetOptStat(0)
-ROOT.gROOT.LoadMacro('/swdev/sharmar/X_analysis/plot_Scripts_T/sumH.C')
-ROOT.gROOT.LoadMacro('/swdev/sharmar/X_analysis/plot_Scripts_T/debug_R_NDoubleDSCBFit.C')
+ROOT.gROOT.LoadMacro('./plot_Scripts_T/sumH.C')
+ROOT.gROOT.LoadMacro('./plot_Scripts_T/debug_R_NDoubleDSCBFit.C')
 CB = ROOT.debug_R_NDoubleDSCBFit()
 
 
-current_directory = "/swdev/sharmar/X_analysis/Aug_25/"
+current_directory = "/swdev/sharmar/X_analysis/Sept_25/without_trigger"
 
 user_choice = input("Enter 0 for Data , 1 to cc MC and 2 for X MC ")
 nL = nR = -100
@@ -55,7 +55,7 @@ if user_choice == "0":
     input = "subreso-Data"
     mass = 3872
     B_pos = 120
-    file_name = "/swdev/sharmar/X_analysis/Data/subreso_Data.root"
+    file_name = "./Data/subreso_Data.root"
     sigma_B = 5.68
     sigma_X = 4.70
     output = "Data"
@@ -65,7 +65,10 @@ elif user_choice == "1":
     input = "subreso-cc_MC"
     mass = 3686
     B_pos = 100
-    file_name = "/swdev/sharmar/X_analysis/cc_MC/subreso_cc.root"
+    # file_name = "./cc_MC/subreso_cc.root" # original
+    file_name = "/swdev/sharmar/X_analysis/Sept_25/cc_MC/subreso_cc.root"
+    # weight_file = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/compared/rewight_Kpp_cc_smooth.root"
+    # tree_w = "hcc1"
     sigma_B = 5.03
     sigma_X = 2.6
     output = "cc_MC"
@@ -75,7 +78,10 @@ elif user_choice == "2":
     input = "subreso-X_MC"
     mass = 3872
     B_pos = 11000
-    file_name = "/swdev/sharmar/X_analysis/X_MC/subreso_X.root"
+    # file_name = "./X_MC/subreso_X.root"
+    file_name =  "/swdev/sharmar/X_analysis/Sept_25/X_MC/subreso_X.root"
+    # weight_file = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/compared/rewight_Kpp_x_smooth.root"
+    # tree_w = "hx1"
     sigma_B = 5.5
     sigma_X = 2.5
     output = "X_MC"
@@ -84,10 +90,16 @@ elif user_choice == "2":
 else:
     print("Invalid")        
 
+# if (user_choice == "0"):
+#   exit
+# else:
+  # file_h = ROOT.TFile.Open(f"{weight_file}","READ")
+
 file2 = ROOT.TFile.Open(f"{file_name}","READ")
 def histo(file,particle):
     my_tree = file.Get("nTuple")
-
+    # if (user_choice == "1" or user_choice == "2"):
+    #  hist = file_h.Get(f"{tree_w}")
     Bp_Jpsi_B_M = my_tree.GetBranch("Bp_Jpsi_B_M")
     Bp_Jpsi_X_M = my_tree.GetBranch("Bp_Jpsi_X_M")
     nCandidate = my_tree.GetBranch("nCandidate")
@@ -102,6 +114,8 @@ def histo(file,particle):
     Bp_Hlt2DiMuonDetachedJPsiDecision_TOS = my_tree.GetBranch("Bp_Hlt2DiMuonDetachedJPsiDecision_TOS")
     Bp_Hlt2Phys_TOS = my_tree.GetBranch("Bp_Hlt2Phys_TOS")
     Bp_Hlt1Phys_TOS = my_tree.GetBranch("Bp_Hlt1Phys_TOS")
+    weight = my_tree.GetBranch("weight")
+    avg_weight = my_tree.GetBranch("avg_weight")
     
     ## Histograms    
     histo_B_mass_signal = ROOT.TH1F("B_mass_Jpsi_Constrained_sub"," ", 200, 5100, 5500)
@@ -128,6 +142,9 @@ def histo(file,particle):
         nCandidates_cut = nCandidate.GetLeaf("nCandidate").GetValue()
         branch_value_X = Bp_Jpsi_X_M.GetLeaf("Bp_Jpsi_X_M").GetValue()
         Jpsi_reflection = Bp_B_jpsi_pi2pi3.GetLeaf("Bp_B_jpsi_pi2pi3").GetValue()
+        if (user_choice == "1" or user_choice == "2"):
+         WeighT = weight.GetLeaf("weight").GetValue()
+         avg_WeighT = avg_weight.GetLeaf("avg_weight").GetValue()
         
         L01 = Bp_L0DiMuonDecision_TOS.GetLeaf("Bp_L0DiMuonDecision_TOS").GetValue()
         L02 = Bp_L0MuonDecision_TOS.GetLeaf("Bp_L0MuonDecision_TOS").GetValue()
@@ -138,17 +155,29 @@ def histo(file,particle):
         Hlt1_4 = Bp_Hlt1TrackMVADecision_TOS.GetLeaf("Bp_Hlt1TrackMVADecision_TOS").GetValue()
 
         Hlt2_1 = Bp_Hlt2DiMuonDetachedJPsiDecision_TOS.GetLeaf("Bp_Hlt2DiMuonDetachedJPsiDecision_TOS").GetValue()
-
+        
         ## trigger requirement reflection removals and multiple entry removals               
-        # if (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)):
-        if (L01 or L02) and (Hlt1_1 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1) and (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)): #trigger without PhysDec
+        if (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)): # without_trigger
+        # if (L01 or L02) and (Hlt1_1 or Hlt1_3 or Hlt1_4 ) and (Hlt2_1) and (nCandidates_cut == 0) and ((Lower>Jpsi_reflection or Jpsi_reflection>Upper)): # with trigger
           if (abs(branch_value_cut-mass) < 2.0*sigma_X):
-                histo_B_mass_signal.Fill(branch_value_B)
+            if (user_choice == "0"):
+              histo_B_mass_signal.Fill(branch_value_B)
+            else:
+              # histo_B_mass_signal.Fill(branch_value_B,WeighT)
+              histo_B_mass_signal.Fill(branch_value_B,avg_WeighT)
           if (abs(branch_value_B-5280) < 2.0*sigma_B):
-                histo_X_mass_signal.Fill(branch_value_X)
+            if (user_choice == "0"):
+              histo_X_mass_signal.Fill(branch_value_X)
+            else:
+              # histo_X_mass_signal.Fill(branch_value_X,WeighT)
+              histo_X_mass_signal.Fill(branch_value_X,avg_WeighT)
           ## sideband without reflections
           if (abs(branch_value_B-5280) > 4.0*sigma_B) and (abs(branch_value_B-5280) < 10.0*sigma_B):
-                histo_X_mass_sideband_sub.Fill(branch_value_X)
+            if (user_choice == "0"):        
+              histo_X_mass_sideband_sub.Fill(branch_value_X)
+            else:  
+              # histo_X_mass_sideband_sub.Fill(branch_value_X,WeighT)
+              histo_X_mass_sideband_sub.Fill(branch_value_X,avg_WeighT)
     
     del my_tree  
     return  histo_B_mass_signal, histo_X_mass_signal, histo_X_mass_sideband_sub

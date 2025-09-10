@@ -47,8 +47,6 @@ ROOT.gROOT.LoadMacro('./plot_Scripts_T/debug_R_NDoubleDSCBFit.C')
 CB = ROOT.debug_R_NDoubleDSCBFit()
 
 
-current_directory = "./Jul_25/weighted"
-
 user_choice = input("Enter 0 for Data , 1 to cc MC and 2 for X MC ")
 nL = nR = -100
 alphaL = -100
@@ -67,8 +65,12 @@ elif user_choice == "1":
     input = "subreso-cc_MC"
     mass = 3686
     B_pos = 100
-    file_name = "./cc_MC/subreso_cc.root"
-    weight_file = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/compared/rewight_Kpp_cc_smooth.root"
+    # file_name = "./cc_MC/subreso_cc.root"
+    file_name = "/swdev/sharmar/X_analysis/Sept_25/cc_MC/subreso_cc.root"
+    # file_name = "/swdev/sharmar/X_analysis/Sept_25/cc_MC/subreso_cc_30.root"
+    weight_file = "/swdev/sharmar/X_analysis/Sept_25/Kaon_excitations/compared/reweight_Kpp_cc.root" 
+    # weight_file = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/compared/rewight_Kpp_cc_smooth.root" #noramlised with total entries
+    # weight_file = "/swdev/sharmar/X_analysis/Sept_25/Kaon_excitations_30MeV/compared/reweight_Kpp_cc.root" # normalised with integral
     sigma_B = 5.03
     sigma_X = 2.6
     output = "cc_MC"
@@ -78,8 +80,10 @@ elif user_choice == "2":
     input = "subreso-X_MC"
     mass = 3872
     B_pos = 11000
-    file_name = "./X_MC/subreso_X.root"
-    weight_file = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/compared/rewight_Kpp_x_smooth.root"
+    # file_name = "./X_MC/subreso_X.root"
+    file_name = "/swdev/sharmar/X_analysis/Sept_25/X_MC/subreso_X.root"
+    # file_name = "/swdev/sharmar/X_analysis/Sept_25/X_MC/subreso_X.root"
+    weight_file = "/swdev/sharmar/X_analysis/Sept_25/Kaon_excitations/compared/reweight_Kpp_x.root"
     sigma_B = 5.5
     sigma_X = 2.5
     output = "X_MC"
@@ -97,16 +101,18 @@ mu_mass = 105.658
 pi_mass = 139.5    
 file_h = ROOT.TFile.Open(f"{weight_file}","READ")
 # if (user_choice == "1" or user_choice == "2"):
-def add_branch(file_name,file_h,tree_w,permutation):
+def add_branch(file_name,file_h,tree_w,permutation,mean):
     hist = file_h.Get(f"{tree_w}")
 
     #ROOT File
     file = ROOT.TFile.Open(f"{file_name}","UPDATE")
     my_tree = file.Get("nTuple;10")
     # my_tree.AddFriend("nTuple","/home/rsharm18/work/Rootfile/TMVA_Single_Entry_2_X.root")
+    avg_weight_arr = array('d',[0.])
     weight_arr = array('d',[0.]) 
     m_kpp_arr = array('d',[0.])
 
+    avg_weight = my_tree.Branch("avg_weight",avg_weight_arr,'avg_weight/D')
     weight = my_tree.Branch("weight",weight_arr,'weight/D')
     m_kpp = my_tree.Branch("m_kpp",m_kpp_arr,'m_kpp/D')
 
@@ -167,6 +173,7 @@ def add_branch(file_name,file_h,tree_w,permutation):
     Pi3_PY = my_tree.GetBranch("Pi3_PY")
     Pi3_PZ = my_tree.GetBranch("Pi3_PZ")
     # print()
+    l = 0
     for i in range(0,my_tree.GetEntries()):
     # for i in range(0,10000):
     # for entry in my_tree:
@@ -273,32 +280,35 @@ def add_branch(file_name,file_h,tree_w,permutation):
       m_kpp_arr[0] = K_exct
     #   print(K_exct, m_kpp_arr[0])
       
-
+      if (hist.Interpolate(K_exct) == 0.0):
+        weight_arr[0]=0.0
+        avg_weight_arr[0] = 0.0
+      else: 
+        avg_weight_arr[0] = hist.Interpolate(K_exct)/mean 
+        weight_arr[0]=hist.Interpolate(K_exct)
       
-      nbins = hist.GetNbinsX()
-      for j in range(1, nbins+1):
-        L_E = hist.GetXaxis().GetBinLowEdge(j)
-        U_E = L_E + 15.0
-        if (L_E <= K_exct < U_E):
-          if ( hist.GetBinContent(j) == 0.0):
-            weight_arr[0] = 1.0
-            # print("1.0",weight_arr,hist.GetBinContent(j))
-          else:  
-            k = hist.GetBinContent(j)
-            weight_arr[0] = k
-            # print("not 1.0",weight_arr,hist.GetBinContent(j))
-
-    # #   weight.Fill()    
-          # print(j, weight_arr,K_exct,i)
-      my_tree.Fill()   # this one worked
-    #   my_tree.Write("",ROOT.TObject.kOverwrite)  
+      
+    #   nbins = hist.GetNbinsX()
+    #   for j in range(1, nbins+1):
+    #     L_E = hist.GetXaxis().GetBinLowEdge(j)
+    #     U_E = L_E + 15.0
+    #     if (L_E <= K_exct < U_E):
+    #       if ( hist.GetBinContent(j) == 0.0):
+    #         weight_arr[0] = 1.0
+    #       else:  
+    #         k = hist.GetBinContent(j)
+    #         weight_arr[0] = k
+      weight.Fill()  
+      avg_weight.Fill()
+      m_kpp.Fill()
+      
       print(i)
     file.cd()
     file.Write("",ROOT.TObject.kOverwrite) 
 
 if (user_choice == "1"):
-  add_branch(file_name,file_h,"hcc1","Kpp")
+  add_branch(file_name,file_h,"hcc1","Kpp",0.97343723)
 elif (user_choice == "2"):
-  add_branch(file_name,file_h,"hx1","Kpp")
+  add_branch(file_name,file_h,"hx1","Kpp",0.96829675)
 
 

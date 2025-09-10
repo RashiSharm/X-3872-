@@ -47,9 +47,10 @@ ROOT.gROOT.LoadMacro('./plot_Scripts_T/NDoubleDSCBFit.C')
 poly = ROOT.FitMyPoly()
 DSCB = ROOT.NDoubleDSCBFit()
 
-current_directory = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/weighted/compared"
-current_directory_2 = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/weighted/stacked"
-hist_dir = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/weighted"
+current_directory = "/swdev/sharmar/X_analysis/Sept_25/Kaon_excitations/compared"
+current_directory_2 = "/swdev/sharmar/X_analysis/Sept_25/Kaon_excitations/stacked"
+hist_dir = "/swdev/sharmar/X_analysis/Sept_25/Kaon_excitations"
+# hist_dir = "/swdev/sharmar/X_analysis/Sept_25/Kaon_excitations/"
 
 file_XK = f"{hist_dir}/Data/Kaon_excitations_with_X_XK.root"
 file_XK_MC = f"{hist_dir}/X_MC/Kaon_excitations_with_X_XK.root"
@@ -81,6 +82,12 @@ file_ccpim_MC = f"{hist_dir}/cc_MC/Kaon_excitations_with_cc_XPim.root"
 file_ccpimp = f"{hist_dir}/Data/Kaon_excitations_with_cc_XPimp.root"
 file_ccpimp_MC = f"{hist_dir}/cc_MC/Kaon_excitations_with_cc_XPimp.root"
 
+file_MC_Noweight_cc = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/cc_MC/Kaon_excitations_with_cc_Kpp.root"
+file_MC_Noweight_X = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/X_MC/Kaon_excitations_with_X_Kpp.root"
+
+
+# file_XKpp_Int_nom = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/weighted/stacked/x_Kpp_Norm_int.root"
+# file_ccKpp_Int_nom = "/swdev/sharmar/X_analysis/Jul_25/Kaon_excitations/weighted/stacked/cc_Kpp_Norm_int.root"
 def hist_comp(file_name_1,file_name_2,particle,permutation):
 
     file = ROOT.TFile.Open(f"{file_name_1}","READ")
@@ -95,17 +102,26 @@ def hist_comp(file_name_1,file_name_2,particle,permutation):
     line.SetLineColor(36)
     legend = ROOT.TLegend(0.8, 0.75, 0.9, 0.85)
     legend.SetBorderSize(0)
-    hi_1.Scale(1./hi_1.GetEntries())
-    hi_2.Scale(1./hi_2.GetEntries())
+    # hi_1.Scale(1./hi_1.GetEntries())
+    # hi_2.Scale(1./hi_2.GetEntries())
+    hi_1.Scale(1./hi_1.Integral())
+    hi_2.Scale(1./hi_2.Integral())
+
+    print("Integral ", particle, hi_1.Integral())
+    print("Integral ", particle ,hi_2.Integral())
     hi_1.SetLineColor(1)
     hi_2.SetLineColor(2)
     legend.AddEntry(hi_1,"Data")
     legend.AddEntry(hi_2,"MC")
     hi_1.Draw('E')
     hi_2.Draw("same")
-    line.Draw("same")
+    # line.Draw("same")
     legend.Draw("same")
-    c0.SaveAs(f"{current_directory}/{particle}_{permutation}.root")
+    c0.SaveAs(f"{current_directory_2}/{particle}_{permutation}.root")
+    # c0.SaveAs(f"{current_directory_2}/{particle}_{permutation}.root")
+    
+    hi_1.Smooth()
+    hi_2.Smooth()
 
     c1 = ROOT.TCanvas()
     c1.cd()
@@ -117,28 +133,62 @@ def hist_comp(file_name_1,file_name_2,particle,permutation):
     hi_W = hi_1/hi_2
     hi_W.Smooth()
 
+    # for i in range(1,50):
+        # print(i,hi_W.GetBinContent(i),hi_1.GetBinContent(i),hi_2.GetBinContent(i))    
+
+
+    # # for binning 30
+    # if (permutation == "Kpp"):
+    #     if (particle=="cc"):    
+    #         k=0.0
+    #         for i in range(int(20/2),int(30/2)):
+    #             k=k-0.004
+    #             hi_W.SetBinContent(i,0.03-k)    
+    #         for i in range(int(70/2),int(77/2)):  # was till 76  
+    #             hi_W.SetBinContent(i,hi_W.GetBinContent(int(69/2)))  
+    #             # print(i,hi_W.GetBinContent(i))    
+    #     elif(particle == "x"):
+    #         Fit_X = DSCB.fit(hi_W,900,1350,44,1280,100,-10,1.0,-10,1.5,-1)
+    #         k=0.0
+    #         for i in range(int(19/2),int(27/2)):
+    #             k=k-0.05 # was 0.02
+    #             hi_W.SetBinContent(i,0.004-k) 
+    #             # print(i,hi_W.GetBinContent(i), "L1") 
+    #         for i in range(int(27/2),int(61/2)):
+    #             hi_W.SetBinContent(i,Fit_X.Eval(hi_W.GetXaxis().GetBinCenter(i))) 
+    #             # print(i,hi_W.GetBinContent(i),"L2")    
+    #         for i in range(int(61/2),int(66/2)):    
+    #             hi_W.SetBinContent(i,hi_W.GetBinContent(int(60/2)))
+    #             # print(i,hi_W.GetBinContent(i),"L3") 
+
+    # for binning 15
     if (permutation == "Kpp"):
         if (particle=="cc"):    
             k=0.0
             for i in range(20,30):
-                k=k-0.004
+                k=k-0.0025
                 hi_W.SetBinContent(i,0.03-k) 
-            for i in range(70,76):    
+            for i in range(70,77):  # was till 76  
                 hi_W.SetBinContent(i,hi_W.GetBinContent(69))  
         elif(particle == "x"):
             Fit_X = DSCB.fit(hi_W,900,1350,44,1280,100,-10,1.0,-10,1.5,-1)
             k=0.0
             for i in range(19,27):
-                k=k-0.02
+                k=k-0.0075 # was 0.02
                 hi_W.SetBinContent(i,0.004-k) 
             for i in range(27,61):
                 hi_W.SetBinContent(i,Fit_X.Eval(hi_W.GetXaxis().GetBinCenter(i)))    
             for i in range(61,66):    
                 hi_W.SetBinContent(i,hi_W.GetBinContent(60))
+
+                
     
-    hi_W.Draw('E')
+
+    hi_W.GetYaxis().SetTitle(f"Weight")
+    hi_W.Draw("CHIST")
         # Fit_X.Draw("same")    
-    hi_W.SaveAs(f"{current_directory_2}/rewight_{permutation}_{particle}_smooth.root")
+    hi_W.SaveAs(f"{current_directory}/reweight_{permutation}_{particle}.root")
+    # hi_W.SaveAs(f"{current_directory}/reweight_{permutation}_{particle}.root")
 
     
     if (particle == "cc"):
@@ -147,10 +197,10 @@ def hist_comp(file_name_1,file_name_2,particle,permutation):
     # for i in range(1, nbins+1):    
         # print(hi_W.GetBinCenter(i),hi_W.GetBinContent(i),i)
     
-   
     return None
 
 
+# hist_comp(file_data_X,file_MC_X,"x","Kpp")
 # hist_comp(file_XK,file_XK_MC,"x","XK")
 # hist_comp(file_ccK,file_ccK_MC,"cc","XK")
 # hist_comp(file_XKpim,file_XKpim_MC,"x","KPim")
@@ -165,8 +215,12 @@ hist_comp(file_ccKpp,file_ccKpp_MC,"cc","Kpp")
 # hist_comp(file_ccpim,file_ccpim_MC,"cc","pim")
 # hist_comp(file_Xpimp,file_Xpimp_MC,"x","pimp")
 # hist_comp(file_ccpimp,file_ccpimp_MC,"cc","pimp")
-    
 
+
+
+# ####################################################  Data vs unweighted MC    
+# hist_comp(file_XKpp,file_MC_Noweight_X,"x","Kpp")
+# hist_comp(file_ccKpp,file_MC_Noweight_cc,"cc","Kpp")
 
 #modifying weights using functions manually
 
