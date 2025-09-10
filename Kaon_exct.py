@@ -96,8 +96,6 @@ def PE_calculator(mass,px,py,pz):
     PE = np.sqrt(np.power(px,2)+np.power(py,2)+np.power(pz,2)+(np.power(mass,2)))
     return PE
 
-
-
 file = ROOT.TFile.Open(f"{file_name}","READ")
 def histo(file,particle,permutation,lower,upper):
     my_tree = file.Get("nTuple")
@@ -315,7 +313,6 @@ def histo(file,particle,permutation,lower,upper):
 
 def hist_save(histog,hist_SB,particle,permutation,lower,upper):
 
-    file = ROOT.TFile.Open(f"{file_name}","READ")
     c0 = ROOT.TCanvas()
     c0.cd()
     c0.SetFrameLineWidth(2)

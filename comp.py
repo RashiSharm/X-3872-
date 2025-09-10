@@ -131,76 +131,15 @@ def hist_comp(file_name_1,file_name_2,particle,permutation):
     # hi_W = hi_1.Clone()
     # hi_W.Divide(hi_2)
     hi_W = hi_1/hi_2
-    hi_W.Smooth()
-
-    # for i in range(1,50):
-        # print(i,hi_W.GetBinContent(i),hi_1.GetBinContent(i),hi_2.GetBinContent(i))    
-
-
-    # # for binning 30
-    # if (permutation == "Kpp"):
-    #     if (particle=="cc"):    
-    #         k=0.0
-    #         for i in range(int(20/2),int(30/2)):
-    #             k=k-0.004
-    #             hi_W.SetBinContent(i,0.03-k)    
-    #         for i in range(int(70/2),int(77/2)):  # was till 76  
-    #             hi_W.SetBinContent(i,hi_W.GetBinContent(int(69/2)))  
-    #             # print(i,hi_W.GetBinContent(i))    
-    #     elif(particle == "x"):
-    #         Fit_X = DSCB.fit(hi_W,900,1350,44,1280,100,-10,1.0,-10,1.5,-1)
-    #         k=0.0
-    #         for i in range(int(19/2),int(27/2)):
-    #             k=k-0.05 # was 0.02
-    #             hi_W.SetBinContent(i,0.004-k) 
-    #             # print(i,hi_W.GetBinContent(i), "L1") 
-    #         for i in range(int(27/2),int(61/2)):
-    #             hi_W.SetBinContent(i,Fit_X.Eval(hi_W.GetXaxis().GetBinCenter(i))) 
-    #             # print(i,hi_W.GetBinContent(i),"L2")    
-    #         for i in range(int(61/2),int(66/2)):    
-    #             hi_W.SetBinContent(i,hi_W.GetBinContent(int(60/2)))
-    #             # print(i,hi_W.GetBinContent(i),"L3") 
-
-    # for binning 15
-    if (permutation == "Kpp"):
-        if (particle=="cc"):    
-            k=0.0
-            for i in range(20,30):
-                k=k-0.0025
-                hi_W.SetBinContent(i,0.03-k) 
-            for i in range(70,77):  # was till 76  
-                hi_W.SetBinContent(i,hi_W.GetBinContent(69))  
-        elif(particle == "x"):
-            Fit_X = DSCB.fit(hi_W,900,1350,44,1280,100,-10,1.0,-10,1.5,-1)
-            k=0.0
-            for i in range(19,27):
-                k=k-0.0075 # was 0.02
-                hi_W.SetBinContent(i,0.004-k) 
-            for i in range(27,61):
-                hi_W.SetBinContent(i,Fit_X.Eval(hi_W.GetXaxis().GetBinCenter(i)))    
-            for i in range(61,66):    
-                hi_W.SetBinContent(i,hi_W.GetBinContent(60))
-
-                
-    
-
-    hi_W.GetYaxis().SetTitle(f"Weight")
-    hi_W.Draw("CHIST")
-        # Fit_X.Draw("same")    
-    hi_W.SaveAs(f"{current_directory}/reweight_{permutation}_{particle}.root")
-    # hi_W.SaveAs(f"{current_directory}/reweight_{permutation}_{particle}.root")
 
     
-    if (particle == "cc"):
-        hi_W.SetBinContent(51,1.876)       
-    nbins = hi_W.GetNbinsX()
-    # for i in range(1, nbins+1):    
-        # print(hi_W.GetBinCenter(i),hi_W.GetBinContent(i),i)
+    hi_W.Draw('E')
+    line.Draw("same")
     
-    return None
+   
+    return hi_W
 
 
-# hist_comp(file_data_X,file_MC_X,"x","Kpp")
 # hist_comp(file_XK,file_XK_MC,"x","XK")
 # hist_comp(file_ccK,file_ccK_MC,"cc","XK")
 # hist_comp(file_XKpim,file_XKpim_MC,"x","KPim")
@@ -209,8 +148,8 @@ def hist_comp(file_name_1,file_name_2,particle,permutation):
 # hist_comp(file_ccpip,file_ccpip_MC,"cc","pip")  
 # hist_comp(file_X_jpsipipi,file_X_jpsipipi_MC,"x","jpsipipi")
 # hist_comp(file_cc_jpsipipi,file_cc_jpsipipi_MC,"cc","jpsipipi") 
-hist_comp(file_XKpp,file_XKpp_MC,"x","Kpp")
-hist_comp(file_ccKpp,file_ccKpp_MC,"cc","Kpp")
+h_X_W =hist_comp(file_XKpp,file_XKpp_MC,"x","Kpp")
+h_cc_W = hist_comp(file_ccKpp,file_ccKpp_MC,"cc","Kpp")
 # hist_comp(file_Xpim,file_Xpim_MC,"x","pim")
 # hist_comp(file_ccpim,file_ccpim_MC,"cc","pim")
 # hist_comp(file_Xpimp,file_Xpimp_MC,"x","pimp")
